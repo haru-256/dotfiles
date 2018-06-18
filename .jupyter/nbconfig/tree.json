@@ -1,0 +1,6 @@
+{
+  "load_extensions": {
+    "jupyter_tensorboard/tree": true,
+    "nbextensions_configurator/tree_tab/main": true
+  }
+}

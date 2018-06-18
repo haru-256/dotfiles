@@ -1,0 +1,17 @@
+{
+  "load_extensions": {
+    "code_font_size/code_font_size": true,
+    "equation-numbering/main": true,
+    "toc2/main": true,
+    "nbextensions_configurator/config_menu/main": true,
+    "contrib_nbextensions_help_item/main": true,
+    "latex_envs/latex_envs": true,
+    "code_prettify/autopep8": false,
+    "code_prettify/code_prettify": true
+  },
+  "Cell": {
+    "cm_config": {
+      "lineNumbers": true
+    }
+  }
+}
