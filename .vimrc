@@ -22,6 +22,7 @@ set helplang=ja,en                " help言語の設定
 
 set number " 行番号を表示
 set cursorline " カーソルラインをハイライト
+set incsearch " seearch方法をwebブラウザのように
 set scrolloff=0
 set laststatus=2                  " 常にステータス行を表示する
 set cmdheight=2                   " hit-enter回数を減らすのが目的
@@ -56,6 +57,12 @@ noremap! <3-MiddleMouse> <Nop>
 noremap <4-MiddleMouse> <Nop>
 noremap! <4-MiddleMouse> <Nop>
 
+" 括弧等の自動補完
+inoremap { {}<LEFT>
+inoremap [ []<LEFT>
+inoremap ( ()<LEFT>
+inoremap " ""<LEFT>
+inoremap ' ''<LEFT>
 "-------------------------------------------------------------------------------
 " ステータスライン設定
 let &statusline = "%<%f %m%r%h%w[%{&ff}][%{(&fenc!=''?&fenc:&enc).(&bomb?':bom':'')}] "
@@ -112,11 +119,50 @@ syntax enable
 set background=dark
 colorscheme solarized
 
-"try
-"  silent hi CursorIM
-"catch /E411/
+try
+  silent hi CursorIM
+catch /E411/
    "CursorIM (IME ON中のカーソル色)が定義されていなければ、紫に設定
-"  hi CursorIM ctermfg=16 ctermbg=127 guifg=#000000 guibg=#af00af
-"endtry
+  hi CursorIM ctermfg=16 ctermbg=127 guifg=#000000 guibg=#af00af
+endtry
 
-" vim:set et ts=2 sw=0:
+" Tab, インデントの設定
+set et ts=4 sw=0
+
+"-------------------------------------------------------------------------------
+" vim-plugの設定開始(begineの引数はVimプラグインが格納されているディレクトリ)
+call plug#begin('~/.vim/plugged')
+
+" NERDTreeのインストール
+Plug 'scrooloose/nerdtree'
+
+" tcomment_vimのインストール
+Plug 'tomtom/tcomment_vim'
+
+" vim-trailing-whitespaceのインストール
+Plug 'bronson/vim-trailing-whitespace'
+
+" mattn/emmet-vimのインストール
+Plug 'mattn/emmet-vim'
+" emmet-vimの設定を書き換える
+let g:user_emmet_settings = {
+\   'lang' : 'ja'
+\ }
+
+" tpope/vim-surroundのインストール
+Plug 'tpope/vim-surround'
+
+" hail2u/vim-css3-syntaxのインストール
+Plug 'hail2u/vim-css3-syntax'
+
+" pangloss/vim-javascriptのインストール
+Plug 'pangloss/vim-javascript'
+
+" othree/html5.vimのインストール
+Plug 'othree/html5.vim'
+
+" 他のインストールしたいVimプラグいんがあれば，同様に記述する
+
+" vim-plugの設定終了
+call plug#end()
+"-------------------------------------------------------------------------------
