@@ -1,0 +1,143 @@
+# Which is equivalent to
+format = """
+$username\
+$hostname\
+$shlvl\
+$kubernetes\
+$directory\
+$custom\
+$vcsh\
+$git_branch\
+$git_commit\
+$git_state\
+$git_metrics\
+$git_status\
+$hg_branch\
+$docker_context\
+$package\
+$cmake\
+$dart\
+$deno\
+$dotnet\
+$elixir\
+$elm\
+$erlang\
+$golang\
+$helm\
+$java\
+$julia\
+$kotlin\
+$nim\
+$nodejs\
+$ocaml\
+$perl\
+$php\
+$purescript\
+$python\
+$red\
+$ruby\
+$rust\
+$scala\
+$swift\
+$terraform\
+$vlang\
+$vagrant\
+$zig\
+$nix_shell\
+$conda\
+$aws\
+$gcloud\
+$openstack\
+$env_var\
+$crystal\
+$cmd_duration\
+$line_break\
+$lua\
+$jobs\
+$battery\
+$status\
+$shell\
+$character"""
+
+# right_format = """
+# $memory_usage\
+# $time"""
+
+[hostname]
+style = "bold #bd93f9"
+ssh_only = false
+
+[username]
+format = "[$user]($style) on "
+style_user = "bold #8be9fd"
+
+[character]
+error_symbol = "[λ](bold #ff5555) "
+success_symbol = "[λ](bold #50fa7b) "
+
+[cmd_duration]
+style = "bold #f1fa8c"
+
+[git_branch]
+symbol = " "
+style = "bold #ff79c6"
+
+[git_status]
+style = "bold #ff5555"
+
+[nodejs]
+style = "bold #f1fa8c"
+
+[python]
+style = "bold #f1fa8c"
+symbol = " "
+
+[golang]
+style = "bold #f1fa8c"
+symbol = " "
+
+[gcloud]
+format = "on [$symbol $active]($style) "
+symbol = ""
+style = "bold #f1fa8c"
+
+[terraform]
+detect_files = ['.terraform-version']
+format = 'via [$symbol$version]($style) '
+style = "bold #f1fa8c"
+
+[directory]
+style = "bold #50fa7b"
+
+[memory_usage]
+disabled = false
+# format = '$symbol [${ram}( | ${swap})]($style) '
+format = '$symbol[${ram}]($style) '
+threshold = 0
+
+[time]
+disabled = false
+
+# [custom.directory]
+# command = '''
+# if git rev-parse --git-dir >/dev/null 2>&1
+#     set -l git_root_dir (basename (git rev-parse --show-toplevel))
+#     set -l git_prefix_path (string replace -r '/$' "" (git rev-parse --show-prefix))
+#     set -l path (string join "/" $git_root_dir $git_prefix_path)
+#     if test -d .git
+#         set path_prompt $git_root_dir
+#     else
+#         # This allows overriding fish_prompt_pwd_dir_length from the outside (global or universal) without leaking it
+#         set -q fish_prompt_pwd_dir_length
+#         or set -l fish_prompt_pwd_dir_length 1
+#         set path_prompt (string replace -ar '(\.?[^/]{'"$fish_prompt_pwd_dir_length"'})[^/]*/' '$1/' $path)
+#     end
+# else
+#     # NOT a git repo!
+#     set path_prompt (prompt_pwd)
+# end
+# echo $path_prompt
+# '''
+# when = ""
+# style = "bold #50fa7b"
+# shell = ["fish", "--no-config"]

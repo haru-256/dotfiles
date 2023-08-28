@@ -140,7 +140,7 @@ module.exports = {
     summon: {
       hideDock: false,
       hideOnBlur: false,
-      hotkey: "Ctrl+;",
+      hotkey: "Command+;",
     },
     paneNavigation: {
         hotkeys: {
