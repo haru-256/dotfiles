@@ -1,0 +1,71 @@
+[user]
+	name = Yohei Okabayashi
+	email = yohei.kuro48@gmail.com
+[http]
+	sslVerify = false
+[color]
+	ui = auto
+[core]
+	quotepath = false
+    pager = delta
+[init]
+	defaultBranch = main
+[interactive]
+    diffFilter = "delta --color-only"
+[delta]
+    navigate = true
+    line-numbers = true
+[merge]
+    conflictstyle = diff3
+[diff]
+    colorMoved = default
+[alias]
+    ignore = !"f() { local s=$1; shift; \
+            while [ $# -gt 0 ]; do s=\"$s,$1\"; shift; done;\
+            curl \"https://www.toptal.com/developers/gitignore/api/$s\"; }; f"
+
+    bcleanup = ! git branch -d `git branch --merged | grep -v '^*\\|main\\|master\\|staging\\|devel'`
+
+# dracula color
+# [color "branch"]
+#     current = cyan bold reverse
+#     local = white
+#     plain =
+#     remote = cyan
+# [color "diff"]
+#     commit =
+#     func = cyan
+#     plain =
+#     whitespace = magenta reverse
+#     meta = white
+#     frag = cyan bold reverse
+#     old = red
+#     new = green
+# [color "grep"]
+#     context =
+#     filename =
+#     function =
+#     linenumber = white
+#     match =
+#     selected =
+#     separator =
+# [color "interactive"]
+#     error =
+#     header =
+#     help =
+#     prompt =
+# [color "status"]
+#     added = green
+#     changed = white
+#     header =
+#     localBranch =
+#     nobranch =
+#     remoteBranch = cyan bold
+#     unmerged = magenta bold reverse
+#     untracked = red
+#     updated = green bold
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
