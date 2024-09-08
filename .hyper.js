@@ -23,7 +23,7 @@ module.exports = {
     cursorColor: "rgba(248,28,229,0.8)",
     // terminal text color under BLOCK cursor
     cursorAccentColor: "#000",
-    // `'BEAM'` for |, `'UNDERLINE'` for _, `'BLOCK'` for █
+    // `'BEAM'` for |, `'UNDERLINE'` for _, `'BLOCK'` for b
     cursorShape: "BLOCK",
     // set to `true` (without backticks and without quotes) for blinking cursor
     cursorBlink: false,
@@ -31,7 +31,7 @@ module.exports = {
     foregroundColor: "#fff",
     // terminal background color
     // opacity is only supported on macOS
-    backgroundColor: "#000",
+    backgroundColor: "#282A36",
     // terminal selection color
     selectionColor: "rgba(248,28,229,0.3)",
     // border color (window, tabs)
@@ -92,7 +92,7 @@ module.exports = {
     //
     // Cygwin
     // - Example: `C:\\cygwin64\\bin\\bash.exe`
-    shell: "",
+    shell: "/opt/homebrew/bin/fish",
     // for setting shell arguments (i.e. for using interactive shellArgs: `['-i']`)
     // by default `['--login']` will be used
     shellArgs: ["--login"],
@@ -133,15 +133,10 @@ module.exports = {
     //
     //
     // for window size
-    hyperWindowSize: {
-      width: 900,
-      height: 700,
-    },
-    summon: {
-      hideDock: false,
-      hideOnBlur: false,
-      hotkey: "Command+;",
-    },
+    // hyperWindowSize: {
+    //   width: 900,
+    //   height: 700,
+    // },
     paneNavigation: {
         hotkeys: {
             navigation: {
@@ -157,6 +152,11 @@ module.exports = {
         tabIcons: true,
         activityPulse: false,
         trafficButtons: true,
+    },
+    hyperTransparent: {
+      backgroundColor: '#282A36',
+      opacity: 0.90,
+      vibrancy: '' // ['', 'dark', 'medium-light', 'ultra-dark']
     }
   },
   // a list of plugins to fetch and install from npm
@@ -167,10 +167,10 @@ module.exports = {
   //   `project#1.0.1`
   plugins: [
     'hyper-window-size',
-    'hyperterm-summon',
     'hyper-pane',
-    'hyper-dracula',
-    'hyper-tabs-enhanced'
+    'hyper-tabs-enhanced',
+    "hyper-dracula",
+    "hyper-transparent"
   ],
   // in development, you can create a directory under
   // `~/.hyper_plugins/local/` and include it here

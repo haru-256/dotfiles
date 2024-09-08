@@ -118,6 +118,11 @@ threshold = 0
 [time]
 disabled = false
 
+[jobs]
+symbol_threshold = 2
+format = '[$symbol$number]($style)'
+
+
 # [custom.directory]
 # command = '''
 # if git rev-parse --git-dir >/dev/null 2>&1

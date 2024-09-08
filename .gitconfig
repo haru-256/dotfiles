@@ -15,6 +15,7 @@
 [delta]
     navigate = true
     line-numbers = true
+    side-by-side = true
 [merge]
     conflictstyle = diff3
 [diff]
@@ -69,3 +70,5 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+[ghq]
+	root = ~/repo
