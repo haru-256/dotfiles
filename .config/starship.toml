@@ -72,8 +72,8 @@ format = "[$user]($style) on "
 style_user = "bold #8be9fd"
 
 [character]
-error_symbol = "[λ](bold #ff5555) "
-success_symbol = "[λ](bold #50fa7b) "
+error_symbol = "[λ](bold #ff5555)"
+success_symbol = "[λ](bold #50fa7b)"
 
 [cmd_duration]
 style = "bold #f1fa8c"
@@ -94,11 +94,11 @@ symbol = " "
 
 [golang]
 style = "bold #f1fa8c"
-symbol = " "
+symbol = ""
 
 [gcloud]
-format = "on [$symbol $active]($style) "
-symbol = ""
+format = "on [$symbol$active]($style) "
+symbol = " "
 style = "bold #f1fa8c"
 
 [terraform]

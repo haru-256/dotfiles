@@ -22,13 +22,7 @@ eval (ssh-agent -c) >/dev/null
 /usr/bin/ssh-add -K ~/.ssh/id_ed25519 >/dev/null 2>&1 # add private key to ssh-agent
 
 
-# ?????????????????????
 set -x LANG ja_JP.UTF-8
-
-# pyenv
-# set -x PYENV_ROOT "$HOME/.pyenv" # this env is setted by universal scope
-# fish_add_path $PYENV_ROOT/bin
-# status is-login; and pyenv init --path | source
 
 # zlib, bzip2
 # set -x LDFLAGS -L/usr/local/opt/zlib/lib
@@ -43,12 +37,8 @@ set -x PIPENV_VENV_IN_PROJECT 1
 set -x PIPENV_IGNORE_VIRTUALENVS 1
 
 # brew cleanup
-set -x HOMEBREW_NO_INSTALL_CLEANUP 0
+set -x HOMEBREW_NO_INSTALL_CLEANUP 1
 
-# goenv
-# source (goenv init - | psub)
-# fish_add_path $GOROOT/bin
-# fish_add_path $GOPATH/bin
 
 # run this function at logout
 function on_exit --on-process %self

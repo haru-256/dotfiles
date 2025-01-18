@@ -155,7 +155,7 @@ module.exports = {
     },
     hyperTransparent: {
       backgroundColor: '#282A36',
-      opacity: 0.90,
+      opacity: 1.00,
       vibrancy: '' // ['', 'dark', 'medium-light', 'ultra-dark']
     }
   },
