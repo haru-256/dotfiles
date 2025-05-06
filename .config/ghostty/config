@@ -2,7 +2,7 @@ command = /opt/homebrew/bin/fish -l
 
 theme = "Dracula"
 
-background-opacity = 0.85
+background-opacity = 0.80
 
 font-family = "Inconsolata Nerd Font"
 # font-family = "HackGen35 Console NF"

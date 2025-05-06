@@ -5,6 +5,11 @@ fish_add_path /usr/local/sbin
 fish_add_path /opt/homebrew/bin
 fish_add_path /opt/homebrew/sbin
 
+# asdf
+set -x ASDF_DATA_DIR $HOME/.asdf
+fish_add_path $ASDF_DATA_DIR/shims
+
+# fig
 fish_add_path $HOME/.fig/bin
 
 # fish completions
@@ -98,12 +103,15 @@ set -gx CPPFLAGS -I/opt/homebrew/opt/openjdk/include
 # rust
 # fish_add_path "$HOME/.cargo/bin"
 
+# golang
+# https://github.com/asdf-community/asdf-golang?tab=readme-ov-file#goroot
+source ~/.asdf/plugins/golang/set-env.fish
+
 # fzf
 set -x FZF_DEFAULT_OPTS "--layout=reverse --border=rounded --color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
 # bind for ghq + fzf
 bind \c] "ghq-fzf && commandline -f repaint"
 
-# asdf
-source /opt/homebrew/opt/asdf/libexec/asdf.fish
-# NOTE: 上記scriptのL14でfish_add_pathを使わないように書いているが、先頭に追加するためにfish_add_pathを使う
-fish_add_path $HOME/.asdf/shims
+# for __fish_use_subcommand
+fish_add_path /opt/homebrew/Cellar/fish/4.0.0/share/fish/functions
+

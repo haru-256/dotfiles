@@ -1,0 +1,4 @@
+// https://github.com/code-lever/asdf-rust?tab=readme-ov-file#default-cargo-crates
+
+// cli-tools
+hyperfine
