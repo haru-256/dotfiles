@@ -12,10 +12,13 @@
 	defaultBranch = main
 [interactive]
     diffFilter = "delta --color-only"
+[include]
+    path = "/Users/haru256/repo/github.com/catppuccin/delta/catppuccin.gitconfig"
 [delta]
     navigate = true
     line-numbers = true
     side-by-side = true
+    feature = "catppuccin-mocha"
 [merge]
     conflictstyle = diff3
 [diff]
@@ -25,7 +28,7 @@
             while [ $# -gt 0 ]; do s=\"$s,$1\"; shift; done;\
             curl \"https://www.toptal.com/developers/gitignore/api/$s\"; }; f"
 
-    bcleanup = ! git branch -d `git branch --merged | grep -v '^*\\|main\\|master\\|staging\\|devel'`
+    bcleanup = !git branch --merged | grep -vE '^\\*|main$|master$|staging$|develop$' | xargs git branch -d
 
 # dracula color
 # [color "branch"]

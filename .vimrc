@@ -198,6 +198,8 @@ Plug 'techtuner/aura-neovim'
 
 Plug 'dracula/vim', { 'as': 'dracula' }
 
+Plug 'catppuccin/vim', { 'as': 'catppuccin' }
+
 " 他のインストールしたいVimプラグいんがあれば，同様に記述する
 
 " vim-plugの設定終了
@@ -205,7 +207,7 @@ call plug#end()
 "-------------------------------------------------------------------------------
 syntax enable
 set background=dark
-colorscheme dracula
+colorscheme catppuccin_mocha
 set termguicolors
 
 " 透過させるために背景色などをなくす

@@ -58,12 +58,12 @@ direnv hook fish | source
 starship init fish | source
 
 # fish color settings
-set -x fish_color_command magenta
-set -x fish_color_param normal
-set -x fish_color_option green
-set -x fish_color_operator yellow
-set -x fish_color_quote yellow
-set -x fish_color_error red
+# set -x fish_color_command magenta
+# set -x fish_color_param normal
+# set -x fish_color_option green
+# set -x fish_color_operator yellow
+# set -x fish_color_quote yellow
+# set -x fish_color_error red
 
 # alias
 if type -q eza
@@ -88,8 +88,9 @@ end
 alias cdr="cd (git rev-parse --show-toplevel)"
 
 
-# dracula theme
-source ~/.config/fish/conf.d/dracula.fish
+# theme
+# fish_config theme choose "Dracula Official"
+fish_config theme choose "Catppuccin Mocha"
 
 # add path for gcloud
 source "$(brew --prefix)/share/google-cloud-sdk/path.fish.inc"
@@ -108,7 +109,15 @@ set -gx CPPFLAGS -I/opt/homebrew/opt/openjdk/include
 source ~/.asdf/plugins/golang/set-env.fish
 
 # fzf
-set -x FZF_DEFAULT_OPTS "--layout=reverse --border=rounded --color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
+# dracura
+# set -x FZF_DEFAULT_OPTS "--layout=reverse --border=rounded --color=fg:#f8f8f2,bg:#282a36,hl:#bd93f9 --color=fg+:#f8f8f2,bg+:#44475a,hl+:#bd93f9 --color=info:#ffb86c,prompt:#50fa7b,pointer:#ff79c6 --color=marker:#ff79c6,spinner:#ffb86c,header:#6272a4"
+# catppuccin
+set -x FZF_DEFAULT_OPTS "\
+--color=bg+:#313244,bg:#1E1E2E,spinner:#F5E0DC,hl:#F38BA8 \
+--color=fg:#CDD6F4,header:#F38BA8,info:#CBA6F7,pointer:#F5E0DC \
+--color=marker:#B4BEFE,fg+:#CDD6F4,prompt:#CBA6F7,hl+:#F38BA8 \
+--color=selected-bg:#45475A \
+--color=border:#313244,label:#CDD6F4"
 # bind for ghq + fzf
 bind \c] "ghq-fzf && commandline -f repaint"
 

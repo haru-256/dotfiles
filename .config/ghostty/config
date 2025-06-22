@@ -1,6 +1,8 @@
 command = /opt/homebrew/bin/fish -l
 
-theme = "Dracula"
+# theme = "Dracula"
+# theme = "Aura"
+theme = "catppuccin-mocha"
 
 background-opacity = 0.80
 
