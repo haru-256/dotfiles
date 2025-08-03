@@ -29,6 +29,7 @@
             curl \"https://www.toptal.com/developers/gitignore/api/$s\"; }; f"
 
     bcleanup = !git branch --merged | grep -vE '^\\*|main$|master$|staging$|develop$' | xargs git branch -d
+	aic = "!f() { git diff --staged | xargs -0 gemini -p \"以下のgitの差分に基づいて、Conventional Commits形式でコミットメッセージを1つ提案してください：\"; }; f"
 
 # dracula color
 # [color "branch"]

@@ -208,10 +208,12 @@ call plug#end()
 syntax enable
 set background=dark
 colorscheme catppuccin_mocha
-set termguicolors
+let g:lightline = {'colorscheme': 'catppuccin_mocha'}
+set noshowmode
+" set termguicolors
 
 " 透過させるために背景色などをなくす
-highlight Normal ctermbg=NONE guibg=NONE
-highlight NonText ctermbg=NONE guibg=NONE
-highlight SpecialKey ctermbg=NONE guibg=NONE
-highlight EndOfBuffer ctermbg=NONE guibg=NONE
+" highlight Normal ctermbg=NONE guibg=NONE
+" highlight NonText ctermbg=NONE guibg=NONE
+" highlight SpecialKey ctermbg=NONE guibg=NONE
+" highlight EndOfBuffer ctermbg=NONE guibg=NONE

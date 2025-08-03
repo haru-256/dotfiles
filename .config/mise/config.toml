@@ -1,0 +1,25 @@
+[tools]
+act = "latest"
+direnv = "latest"
+gcloud = "latest"
+gemini-cli = "latest"
+go = "latest"
+golangci-lint = "latest"
+jq = "latest"
+k9s = "latest"
+kubectl = "latest"
+kubectx = "latest"
+kustomize = "latest"
+neovim = "latest"
+node = "latest"
+protoc = "latest"
+python = "latest"
+ripgrep = "latest"
+rust = "latest"
+terraform = "latest"
+usage = "latest"
+uv = "latest"
+fzf = "latest"
+
+[settings]
+idiomatic_version_file_enable_tools = []
