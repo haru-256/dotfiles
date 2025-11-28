@@ -83,6 +83,10 @@ symbol = ""
 style = "bg:yellow"
 format = '[[ $symbol $branch ](fg:crust bg:yellow)]($style)'
 
+[git_state]
+style = "bg:yellow"
+format = '[[\($state($progress_current/$progress_total)\) ](fg:crust bg:yellow)]($style)'
+
 [git_status]
 style = "bg:yellow"
 format = '[[($all_status$ahead_behind )](bold fg:crust bg:yellow)]($style)'

@@ -2,14 +2,17 @@ command = /opt/homebrew/bin/fish -l
 
 # theme = "Dracula"
 # theme = "Aura"
-theme = "catppuccin-mocha"
+theme = Catppuccin Mocha
 
-background-opacity = 0.80
+background-opacity = 0.90
 
 font-family = "Inconsolata Nerd Font"
 # font-family = "HackGen35 Console NF"
 font-size = 17
 
+# for fish キーバインドの競合
+keybind = "alt+left=unbind"
+keybind = "alt+right=unbind"
 
 cursor-style = "block"
 cursor-style-blink = false

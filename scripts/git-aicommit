@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+# 1. ステージング確認
+if git diff --cached --quiet; then
+    echo "🚫 ステージングされた変更がありません。"
+    exit 1
+fi
+
+echo "🤖 Geminiがコミットメッセージを生成中..."
+
+# 2. プロンプト設定
+PROMPT="以下のgit diffから、Conventional Commitsに従ったコミットメッセージを作成してください。タイトルと箇条書きの本文を含め、Markdownのコードブロック(backticks)は含めず、プレーンテキストのみで出力してください。"
+
+# 3. 実行
+git diff --cached | gemini "$PROMPT" | git commit -e -F -
