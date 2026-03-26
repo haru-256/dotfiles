@@ -1,0 +1,218 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      // "shift shift": "file_finder::Toggle"
+    },
+  },
+  {
+    "context": "Editor && vim_mode == insert",
+    "bindings": {
+      // "j k": "vim::NormalBefore"
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-;": "terminal_panel::Toggle",
+    },
+  },
+  {
+    "context": "((VimControl && !menu) || (!Editor && !Terminal))",
+    "bindings": {
+      "; q": "pane::CloseActiveItem",
+    },
+  },
+  // {
+  //   "context": "Pane",
+  //   "bindings": {
+  //     "; l": "pane::SplitLeft",
+  //   },
+  // },
+  // {
+  //   "context": "Pane",
+  //   "bindings": {
+  //     "; h": "pane::SplitRight",
+  //   },
+  // },
+  {
+    "bindings": {
+      "; h": "pane::SplitAndMoveLeft",
+    },
+  },
+  {
+    "bindings": {
+      "; l": "pane::SplitAndMoveRight",
+    },
+  },
+  {
+    // "context": "Workspace",
+    "bindings": {
+      "; c": "command_palette::Toggle",
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "; f": "file_finder::Toggle",
+    },
+  },
+  {
+    "context": "ProjectSearchView",
+    "bindings": {
+      "; e": "project_search::ToggleAllSearchResults",
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "; e": "project_panel::ToggleFocus",
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "; t": "workspace::ToggleRightDock",
+    },
+  },
+  {
+    "context": "vim_mode==normal&&Workspace",
+    "bindings": {
+      "space": "workspace::Save",
+    },
+  },
+  {
+    "context": "(VimControl && !menu)",
+    "bindings": {
+      "; d": "editor::GoToDefinition",
+    },
+  },
+  {
+    "context": "((vim_mode == helix_normal || vim_mode == helix_select) && !menu)",
+    "bindings": {
+      "; r": "editor::FindAllReferences",
+    },
+  },
+  {
+    "context": "(VimControl && !menu)",
+    "bindings": {
+      "; r": "editor::FindAllReferences",
+    },
+  },
+  {
+    "context": "((vim_mode == normal || vim_mode == visual) || vim_mode == operator)",
+    "bindings": {
+      "; shift-r": "vim::GoToNextReference",
+    },
+  },
+  {
+    "context": "(VimControl && !menu)",
+    "bindings": {
+      "space": "workspace::Save",
+    },
+  },
+  {
+    "context": "(VimControl && !menu)",
+    "bindings": {
+      "; b": "pane::GoBack",
+    },
+  },
+  {
+    "context": "(ProjectPanel && not_editing)",
+    "bindings": {
+      "f": "project_panel::NewFile",
+    },
+  },
+  {
+    "context": "(ProjectPanel && not_editing)",
+    "bindings": {
+      "r": "project_panel::Rename",
+    },
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-cmd-j": "editor::JoinLines",
+    },
+  },
+  {
+    "context": "(Editor && (showing_code_actions || showing_completions))",
+    "bindings": {
+      "ctrl-j": "editor::ContextMenuNext",
+      "ctrl-k": "editor::ContextMenuPrevious",
+    },
+  },
+  {
+    "context": "Picker > Editor",
+    "bindings": {
+      "ctrl-j": "menu::SelectNext",
+      "ctrl-k": "menu::SelectPrevious",
+    },
+  },
+  {
+    "context": "!ContextEditor > (Editor && mode == full)",
+    "bindings": {
+      "cmd-i": "assistant::InlineAssist",
+    },
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "cmd-i": "assistant::InlineAssist",
+    },
+  },
+  {
+    "context": "!ContextEditor > (Editor && mode == full)",
+    "bindings": {
+      "ctrl-enter": null,
+    },
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "ctrl-enter": null,
+    },
+  },
+  {
+    "context": "(ProjectPanel && not_editing)",
+    "bindings": {
+      "x": "project_panel::Delete",
+    },
+  },
+  {
+    "context": "((FileFinder || FileFinder > Picker > Editor) || FileFinder > Picker > menu)",
+    "bindings": {
+      "cmd-l": null,
+    },
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "cmd-l": null,
+    },
+  },
+  {
+    "context": "Workspace || Editor",
+    "bindings": {
+      "cmd-l": "agent::ToggleFocus",
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "cmd-?": null
+    }
+  },
+  {
+    "bindings": {
+      "cmd-?": "agent::Toggle"
+    }
+  }
+]

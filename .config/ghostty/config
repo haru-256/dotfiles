@@ -20,3 +20,5 @@ shell-integration-features = no-cursor
 
 window-width = 120
 window-height = 38
+
+shell-integration = none

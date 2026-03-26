@@ -33,6 +33,7 @@ $line_break\
 $character"""
 
 palette = 'catppuccin_mocha'
+command_timeout = 2000
 
 [os]
 disabled = false
@@ -176,10 +177,9 @@ vimcmd_visual_symbol = '[❮](bold fg:yellow)'
 show_milliseconds = true
 format = " in $duration "
 style = "bg:lavender"
-disabled = false
 show_notifications = true
 min_time_to_notify = 45000
-
+disabled = true
 
 # Palette definitions
 [palettes.catppuccin_latte]
