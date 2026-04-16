@@ -11,21 +11,19 @@
   "semantic_tokens": "combined",
   "agent_servers": {
     "gemini": {
-      "type": "registry"
+      "type": "registry",
     },
     "claude-acp": {
-      "type": "registry"
+      "type": "registry",
     },
     "github-copilot-cli": {
       "favorite_config_option_values": {
-        "model": [
-          "gpt-5.4"
-        ]
+        "model": ["gpt-5.4"],
       },
-      "type": "registry"
+      "type": "registry",
     },
     "codex-acp": {
-      "type": "registry"
+      "type": "registry",
     },
     "github-copilot": {
       "type": "registry",
@@ -62,17 +60,7 @@
     "favorite_models": [
       {
         "provider": "copilot_chat",
-        "model": "claude-haiku-4.5",
-        "enable_thinking": true,
-      },
-      {
-        "provider": "copilot_chat",
         "model": "claude-sonnet-4.6",
-        "enable_thinking": true,
-      },
-      {
-        "provider": "copilot_chat",
-        "model": "gpt-5.3-codex",
         "enable_thinking": true,
       },
       {
@@ -83,7 +71,7 @@
       {
         "provider": "copilot_chat",
         "model": "gpt-5.4",
-        "enable_thinking": false,
+        "enable_thinking": true,
       },
     ],
     "inline_assistant_model": {
@@ -100,6 +88,13 @@
     "model_parameters": [],
   },
   "context_servers": {
+    "mcp-server-github": {
+      "enabled": true,
+      "remote": false,
+      "settings": {
+        "github_personal_access_token": "GITHUB_PERSONAL_ACCESS_TOKEN"
+      }
+    },
     "terraform-context-server": {
       "enabled": true,
       "settings": {},
