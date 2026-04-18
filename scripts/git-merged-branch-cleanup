@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+readonly PROTECTED_BRANCH_PATTERN='^(main|master|develop|staging)$'
+
+# Return the currently checked out local branch, or an empty string in detached HEAD.
+current_branch() {
+  git symbolic-ref --quiet --short HEAD 2>/dev/null || true
+}
+
+# Treat the GitHub PR merge state as the source of truth so squash/rebase merges
+# are still recognized as merged branches.
+has_merged_pr() {
+  local branch="$1"
+  local response
+
+  response="$(gh pr list --head "$branch" --state merged --json number,mergedAt --limit 1)"
+  [[ "$response" != "[]" ]]
+}
+
+# List every worktree path that currently has the target branch checked out.
+branch_worktrees() {
+  local branch="$1"
+
+  git worktree list --porcelain | awk -v target="refs/heads/${branch}" '
+    $1 == "worktree" { path = $2; next }
+    $1 == "branch" && $2 == target { print path }
+  '
+}
+
+# Any untracked or uncommitted change is treated as unsafe for branch deletion.
+worktree_is_dirty() {
+  local path="$1"
+  [[ -n "$(git -C "$path" status --porcelain --untracked-files=all)" ]]
+}
+
+# Delete a merged branch only when no worktree is using it and all matching
+# worktrees are clean. Return non-zero when the branch must be skipped.
+delete_branch_if_safe() {
+  local branch="$1"
+  local path
+  local found_dirty=0
+  local found_worktree=0
+
+  while IFS= read -r path; do
+    [[ -n "$path" ]] || continue
+    found_worktree=1
+
+    if worktree_is_dirty "$path"; then
+      printf 'error: skipped %s because worktree %s has untracked or uncommitted changes\n' "$branch" "$path" >&2
+      found_dirty=1
+    fi
+  done < <(branch_worktrees "$branch")
+
+  if [[ "$found_dirty" -eq 1 ]]; then
+    return 1
+  fi
+
+  if [[ "$found_worktree" -eq 1 ]]; then
+    printf 'error: skipped %s because it is checked out in a worktree\n' "$branch" >&2
+    return 1
+  fi
+
+  git branch -D "$branch"
+}
+
+main() {
+  local branch
+  local active_branch
+  local had_error=0
+
+  git rev-parse --git-dir >/dev/null
+  active_branch="$(current_branch)"
+
+  # Walk every local branch and decide whether it is safe to prune.
+  while IFS= read -r branch; do
+    [[ -n "$branch" ]] || continue
+
+    if [[ "$branch" == "$active_branch" ]]; then
+      printf 'skip: %s is the current branch\n' "$branch"
+      continue
+    fi
+
+    if [[ "$branch" =~ $PROTECTED_BRANCH_PATTERN ]]; then
+      printf 'skip: %s is protected\n' "$branch"
+      continue
+    fi
+
+    if ! has_merged_pr "$branch"; then
+      printf 'skip: %s has no merged PR\n' "$branch"
+      continue
+    fi
+
+    if ! delete_branch_if_safe "$branch"; then
+      had_error=1
+    fi
+  done < <(git for-each-ref --format='%(refname:short)' refs/heads)
+
+  return "$had_error"
+}
+
+main "$@"
