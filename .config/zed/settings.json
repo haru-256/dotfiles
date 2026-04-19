@@ -92,8 +92,8 @@
       "enabled": true,
       "remote": false,
       "settings": {
-        "github_personal_access_token": "GITHUB_PERSONAL_ACCESS_TOKEN"
-      }
+        "github_personal_access_token": "GITHUB_PERSONAL_ACCESS_TOKEN",
+      },
     },
     "terraform-context-server": {
       "enabled": true,

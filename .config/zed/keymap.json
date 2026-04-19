@@ -9,18 +9,6 @@
   {
     "context": "Workspace",
     "bindings": {
-      // "shift shift": "file_finder::Toggle"
-    },
-  },
-  {
-    "context": "Editor && vim_mode == insert",
-    "bindings": {
-      // "j k": "vim::NormalBefore"
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
       "ctrl-;": "terminal_panel::Toggle",
     },
   },
@@ -53,7 +41,7 @@
     },
   },
   {
-    // "context": "Workspace",
+    "context": "Workspace",
     "bindings": {
       "; c": "command_palette::Toggle",
     },
@@ -207,12 +195,12 @@
   {
     "context": "Workspace",
     "bindings": {
-      "cmd-?": null
-    }
+      "cmd-?": null,
+    },
   },
   {
     "bindings": {
-      "cmd-?": "agent::Toggle"
-    }
-  }
+      "cmd-?": "agent::Toggle",
+    },
+  },
 ]

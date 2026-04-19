@@ -26,6 +26,10 @@ This repository serves as a collection of configuration files that I use to pers
 
 - **Starship Configuration**: [`.config/starship.toml`](command:_github.copilot.openRelativePath?%5B%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FUsers%2Fharu256%2FDocuments%2Fprojects%2Fdotfiles%2F.config%2Fstarship.toml%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%22f3a5329d-980b-4209-9e7f-8f06eb22f622%22%5D "/Users/haru256/Documents/projects/dotfiles/.config/starship.toml")
 
+### Neovim
+
+- **Neovim Configuration**: [`.config/nvim/init.lua`](command:_github.copilot.openRelativePath?%5B%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FUsers%2Fharu256%2FDocuments%2Fprojects%2Fdotfiles%2F.config%2Fnvim%2Finit.lua%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%22f3a5329d-980b-4209-9e7f-8f06eb22f622%22%5D "/Users/haru256/Documents/projects/dotfiles/.config/nvim/init.lua")
+
 ### Git
 
 - **Git Configuration**: [`.gitconfig`](command:_github.copilot.openRelativePath?%5B%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FUsers%2Fharu256%2FDocuments%2Fprojects%2Fdotfiles%2F.gitconfig%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%22f3a5329d-980b-4209-9e7f-8f06eb22f622%22%5D "/Users/haru256/Documents/projects/dotfiles/.gitconfig")
@@ -58,5 +62,6 @@ ln -s ~/dotfiles/.config/fish/conf.d/dracula.fish ~/.config/fish/conf.d/dracula.
 ln -s ~/dotfiles/.config/fish/conf.d/z.fish ~/.config/fish/conf.d/z.fish
 ln -s ~/dotfiles/.config/direnv/direnvrc ~/.config/direnv/direnvrc
 ln -s ~/dotfiles/.config/starship.toml ~/.config/starship.toml
+ln -s ~/dotfiles/.config/nvim/init.lua ~/.config/nvim/init.lua
 ln -s ~/dotfiles/vscode/keybindings.json ~/.config/Code/User/keybindings.json
 ```
