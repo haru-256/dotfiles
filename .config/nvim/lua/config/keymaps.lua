@@ -8,3 +8,8 @@ vim.keymap.set("n", "<C-n>", "<cmd>Neotree filesystem reveal right toggle<cr>", 
 
 -- 定義ジャンプなどで移動した後、ひとつ前の場所へ戻る。
 vim.keymap.set("n", "gb", "<C-o>", { desc = "Go back in jumplist" })
+
+-- フォーマッタを手動で実行する。
+vim.keymap.set("n", "<leader>f", function()
+  require("conform").format({ async = true, lsp_format = "fallback" })
+end, { desc = "Format buffer" })

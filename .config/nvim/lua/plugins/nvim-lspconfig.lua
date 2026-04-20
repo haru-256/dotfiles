@@ -2,6 +2,8 @@ return {
   "neovim/nvim-lspconfig",
   lazy = false,
   config = function()
+    local capabilities = require("blink.cmp").get_lsp_capabilities()
+
     vim.api.nvim_create_autocmd("LspAttach", {
       callback = function(args)
         local opts = { buffer = args.buf }
@@ -25,12 +27,14 @@ return {
     -- Go の定義ジャンプや補完などを gopls で提供する。
     vim.lsp.config("gopls", {
       cmd = { "gopls" },
+      capabilities = capabilities,
     })
     vim.lsp.enable("gopls")
 
     -- Python の定義ジャンプや型情報を basedpyright で提供する。
     vim.lsp.config("basedpyright", {
       cmd = { "basedpyright-langserver", "--stdio" },
+      capabilities = capabilities,
     })
     vim.lsp.enable("basedpyright")
   end,
