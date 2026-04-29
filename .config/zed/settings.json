@@ -7,9 +7,29 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "cli_default_open_behavior": "new_window",
+  "outline_panel": {
+    "dock": "right",
+  },
+  "collaboration_panel": {
+    "dock": "right",
+  },
+  "git_panel": {
+    "dock": "right",
+  },
   "diff_view_style": "split",
   "semantic_tokens": "combined",
   "agent_servers": {
+    "opencode": {
+      "favorite_config_option_values": {
+        "model": [
+          "opencode-go/kimi-k2.6",
+          "opencode-go/deepseek-v4-pro/max",
+          "opencode-go/qwen3.6-plus",
+        ],
+      },
+      "type": "registry",
+    },
     "gemini": {
       "type": "registry",
     },
@@ -86,25 +106,6 @@
       "model": "gpt-5.4",
     },
     "model_parameters": [],
-  },
-  "context_servers": {
-    "mcp-server-github": {
-      "enabled": true,
-      "remote": false,
-      "settings": {
-        "github_personal_access_token": "GITHUB_PERSONAL_ACCESS_TOKEN",
-      },
-    },
-    "terraform-context-server": {
-      "enabled": true,
-      "settings": {},
-    },
-    "mcp-server-context7": {
-      "enabled": true,
-      "settings": {
-        "context7_api_key": "ctx7sk-eefd288e-57ee-4cd6-8d21-acdfd4e2bb16",
-      },
-    },
   },
   "indent_guides": {
     "background_coloring": "disabled",

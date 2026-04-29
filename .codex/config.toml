@@ -1,0 +1,99 @@
+model = "gpt-5.5"
+model_reasoning_effort = "medium"
+personality = "pragmatic"
+approvals_reviewer = "user"
+web_search = "live"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+
+notify = ["/Users/haru256/.codex/plugins/cache/openai-bundled/computer-use/1.0.758/Codex Computer Use.app/Contents/SharedSupport/SkyComputerUseClient.app/Contents/MacOS/SkyComputerUseClient", "turn-ended"]
+
+[projects."/Users/haru256/repo/github.com/haru-256/ml-sandbox"]
+trust_level = "trusted"
+
+[projects."/Users/haru256/repo/github.com/haru-256/archilog"]
+trust_level = "trusted"
+
+[projects."/Users/haru256/repo/github.com/haru-256/devgist"]
+trust_level = "trusted"
+
+[projects."/Users/haru256/Documents/projects/dotfiles"]
+trust_level = "trusted"
+
+[projects."/Users/haru256/repo/github.com/haru-256/gcp-billing-reporter"]
+trust_level = "trusted"
+
+[projects."/Users/haru256/repo/github.com/haru-256/gcectl"]
+trust_level = "trusted"
+
+[projects."/Users/haru256"]
+trust_level = "trusted"
+
+[notice]
+hide_full_access_warning = true
+
+[notice.model_migrations]
+"gpt-5.3-codex" = "gpt-5.4"
+
+[features]
+multi_agent = true
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[plugins."superpowers@openai-curated"]
+enabled = true
+
+[plugins."hugging-face@openai-curated"]
+enabled = true
+
+[plugins."computer-use@openai-bundled"]
+enabled = true
+
+[plugins."google-drive@openai-curated"]
+enabled = true
+
+[plugins."slack@openai-curated"]
+enabled = true
+
+[plugins."browser-use@openai-bundled"]
+enabled = true
+
+[plugins."documents@openai-primary-runtime"]
+enabled = true
+
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = true
+
+[plugins."presentations@openai-primary-runtime"]
+enabled = true
+
+[marketplaces.openai-bundled]
+last_updated = "2026-04-28T07:08:34Z"
+source_type = "local"
+source = "/Users/haru256/.codex/.tmp/bundled-marketplaces/openai-bundled"
+
+[marketplaces.openai-primary-runtime]
+last_updated = "2026-04-28T07:50:30Z"
+source_type = "local"
+source = "/Users/haru256/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
+
+[apps.connector_76869538009648d5b282a4bb21c3d157.tools.github_create_pull_request]
+approval_mode = "approve"
+
+[apps.connector_76869538009648d5b282a4bb21c3d157.tools.github_reply_to_review_comment]
+approval_mode = "approve"
+
+[apps.connector_76869538009648d5b282a4bb21c3d157.tools.github_resolve_review_thread]
+approval_mode = "approve"
+
+[apps.connector_76869538009648d5b282a4bb21c3d157.tools.github_update_pull_request]
+approval_mode = "approve"
+
+[tui]
+status_line = ["current-dir", "git-branch", "model-with-reasoning", "used-tokens", "context-remaining", "five-hour-limit", "weekly-limit"]
+theme = "catppuccin-mocha"
+
+[tui.model_availability_nux]
+"gpt-5.5" = 4

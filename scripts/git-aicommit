@@ -9,10 +9,10 @@ if git diff --cached --quiet; then
     exit 1
 fi
 
-echo "🤖 Codexがコミットメッセージを生成中..."
+echo "🤖 AIがコミットメッセージを生成中..."
 
 # 2. プロンプト設定
 PROMPT="以下のgit diffから、Conventional Commitsに従ったコミットメッセージを作成してください。タイトルと箇条書きの本文を含め、Markdownのコードブロック(backticks)は含めず、プレーンテキストのみで出力してください。"
 
 # 3. 実行
-git diff --cached | gemini --model='gemini-3-flash-preview' "$PROMPT" | git commit -e -F -
+git diff --cached | gemini --skip-trust --model='gemini-3-flash-preview' "$PROMPT" | git commit -e -F -
