@@ -85,7 +85,6 @@ alias cdr="cd (git rev-parse --show-toplevel)"
 # end
 
 # theme
-# fish_config theme choose "Dracula Official"
 fish_config theme choose "Catppuccin Latte"
 
 # add path for gcloud

@@ -7,7 +7,6 @@ This repository serves as a collection of configuration files that I use to pers
 ### Fish Shell
 
 - **Fish Config**: [`.config/fish/config.fish`](command:_github.copilot.openRelativePath?%5B%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FUsers%2Fharu256%2FDocuments%2Fprojects%2Fdotfiles%2F.config%2Ffish%2Fconfig.fish%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%22f3a5329d-980b-4209-9e7f-8f06eb22f622%22%5D "/Users/haru256/Documents/projects/dotfiles/.config/fish/config.fish")
-- **Dracula Theme for Fish**: [`.config/fish/conf.d/dracula.fish`](command:_github.copilot.openRelativePath?%5B%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FUsers%2Fharu256%2FDocuments%2Fprojects%2Fdotfiles%2F.config%2Ffish%2Fconf.d%2Fdracula.fish%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%22f3a5329d-980b-4209-9e7f-8f06eb22f622%22%5D "/Users/haru256/Documents/projects/dotfiles/.config/fish/conf.d/dracula.fish")
 - **Z Plugin for Fish**: [`.config/fish/conf.d/z.fish`](command:_github.copilot.openRelativePath?%5B%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FUsers%2Fharu256%2FDocuments%2Fprojects%2Fdotfiles%2F.config%2Ffish%2Fconf.d%2Fz.fish%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%22f3a5329d-980b-4209-9e7f-8f06eb22f622%22%5D "/Users/haru256/Documents/projects/dotfiles/.config/fish/conf.d/z.fish")
 
 ### Vim
@@ -44,7 +43,7 @@ This repository serves as a collection of configuration files that I use to pers
 
 ## Themes and Plugins
 
-- **Dracula Theme**: Used in Fish, Vim, Tmux, and Hyper.
+- **Catppuccin Latte Theme**: Used across Fish, Neovim, Ghostty, WezTerm, Zed, Starship, and Zellij.
 - **Vim Plugins**: Managed with vim-plug, including NERDTree, tcomment_vim, vim-trailing-whitespace, emmet-vim, vim-surround, vim-css3-syntax, vim-javascript, html5.vim, vim-indent-guides, jedi-vim, solarized, monokai, vim-fish, night-owl.vim, aura-neovim, and dracula.
 
 ## Usage
@@ -58,7 +57,6 @@ ln -s ~/dotfiles/.tmux.conf ~/.tmux.conf
 ln -s ~/dotfiles/.gitconfig ~/.gitconfig
 ln -s ~/dotfiles/.hyper.js ~/.hyper.js
 ln -s ~/dotfiles/.config/fish/config.fish ~/.config/fish/config.fish
-ln -s ~/dotfiles/.config/fish/conf.d/dracula.fish ~/.config/fish/conf.d/dracula.fish
 ln -s ~/dotfiles/.config/fish/conf.d/z.fish ~/.config/fish/conf.d/z.fish
 ln -s ~/dotfiles/.config/direnv/direnvrc ~/.config/direnv/direnvrc
 ln -s ~/dotfiles/.config/starship.toml ~/.config/starship.toml
