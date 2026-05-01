@@ -11,7 +11,7 @@ config.default_prog = { '/opt/homebrew/bin/fish', '-l' }
 
 -- For example, changing the color scheme:
 config.color_scheme_dirs = { "~/.config/wezterm/colors" }
-config.color_scheme = "Dracula (Official)"
+config.color_scheme = "Catppuccin Latte"
 
 -- the font
 -- config.font = wezterm.font("Inconsolata Nerd Font")

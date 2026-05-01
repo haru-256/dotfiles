@@ -112,7 +112,7 @@
     "coloring": "indent_aware",
   },
   "ui_font_family": ".ZedSans",
-  "icon_theme": "Catppuccin Mocha",
+  "icon_theme": "Catppuccin Latte",
   "vim_mode": true,
   "terminal": {
     "shell": {
@@ -158,5 +158,5 @@
   "soft_wrap": "editor_width",
   "ui_font_size": 17.0,
   "buffer_font_size": 16.5,
-  "theme": "Catppuccin Mocha",
+  "theme": "Catppuccin Latte",
 }

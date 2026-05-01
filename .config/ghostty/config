@@ -2,7 +2,7 @@ command = /opt/homebrew/bin/fish -l
 
 # theme = "Dracula"
 # theme = "Aura"
-theme = Catppuccin Mocha
+theme = Catppuccin Latte
 
 background-opacity = 0.90
 
