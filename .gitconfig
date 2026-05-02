@@ -18,7 +18,7 @@
     navigate = true
     line-numbers = true
     side-by-side = true
-    feature = "catppuccin-mocha"
+    feature = "catppuccin-latte"
 [merge]
     conflictstyle = diff3
 [diff]
