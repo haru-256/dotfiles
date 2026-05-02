@@ -73,12 +73,30 @@
   {
     "context": "vim_mode==normal&&Workspace",
     "bindings": {
-      "space": "workspace::Save",
+      "space w": "workspace::Save",
     },
   },
   {
     "context": "(VimControl && !menu)",
     "bindings": {
+      "g d": "editor::GoToDefinition",
+      "g r": "editor::FindAllReferences",
+      "g i": "editor::GoToImplementation",
+      "g t": "editor::GoToTypeDefinition",
+      "g b": "pane::GoBack",
+      "shift-k": "editor::Hover",
+      "space f f": "file_finder::Toggle",
+      "space f g": "pane::DeploySearch",
+      "space f b": "tab_switcher::Toggle",
+      "space f e": "project_panel::ToggleFocus",
+      "space f s": "project_symbols::Toggle",
+      "space l f": "editor::Format",
+      "space l r": "editor::Rename",
+      "space l a": "editor::ToggleCodeActions",
+      "space l d": "editor::Hover",
+      "space l s": "outline::Toggle",
+      "] d": "editor::GoToDiagnostic",
+      "[ d": "editor::GoToPreviousDiagnostic",
       "; d": "editor::GoToDefinition",
     },
   },
@@ -103,7 +121,7 @@
   {
     "context": "(VimControl && !menu)",
     "bindings": {
-      "space": "workspace::Save",
+      "space w": "workspace::Save",
     },
   },
   {
@@ -142,6 +160,14 @@
     "bindings": {
       "ctrl-j": "menu::SelectNext",
       "ctrl-k": "menu::SelectPrevious",
+    },
+  },
+  {
+    "context": "!Editor && TabSwitcher",
+    "bindings": {
+      "d": "tab_switcher::CloseSelectedItem",
+      "j": ["workspace::SendKeystrokes", "down"],
+      "k": ["workspace::SendKeystrokes", "up"],
     },
   },
   {

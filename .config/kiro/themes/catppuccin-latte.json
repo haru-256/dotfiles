@@ -1,0 +1,20 @@
+{
+  "author": {
+    "name": "Catppuccin",
+    "github": "catppuccin"
+  },
+  "version": "1.0",
+  "theme": {
+    "textColor": "#4c4f69",
+    "backgroundColor": "#eff1f5",
+    "matchBackgroundColor": "#ccd0da",
+    "selection": {
+      "textColor": "#8839ef",
+      "backgroundColor": "#bcc0cc"
+    },
+    "description": {
+      "textColor": "#5c5f77",
+      "borderColor": "#7287fd"
+    }
+  }
+}

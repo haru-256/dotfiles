@@ -123,7 +123,7 @@
       "FIG_NEW_SESSION": "\"1\"",
       "CW_NEW_SESSION": "\"1\"",
     },
-    "font_size": 16.5,
+    "font_size": 15.5,
     "font_family": "Inconsolata Nerd Font",
   },
   "project_panel": {
@@ -156,7 +156,7 @@
   "show_edit_predictions": true,
   "ensure_final_newline_on_save": true,
   "soft_wrap": "editor_width",
-  "ui_font_size": 17.0,
-  "buffer_font_size": 16.5,
+  "ui_font_size": 16.5,
+  "buffer_font_size": 15.5,
   "theme": "Catppuccin Latte",
 }

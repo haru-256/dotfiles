@@ -4,7 +4,9 @@ command = /opt/homebrew/bin/fish -l
 # theme = "Aura"
 theme = Catppuccin Latte
 
-background-opacity = 0.90
+background-opacity = 0.85
+background-blur-radius = 20
+# background-blur = true
 
 font-family = "Inconsolata Nerd Font"
 # font-family = "HackGen35 Console NF"

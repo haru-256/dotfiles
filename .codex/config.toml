@@ -32,6 +32,7 @@ trust_level = "trusted"
 
 [notice]
 hide_full_access_warning = true
+hide_rate_limit_model_nudge = true
 
 [notice.model_migrations]
 "gpt-5.3-codex" = "gpt-5.4"
@@ -57,9 +58,6 @@ enabled = true
 [plugins."slack@openai-curated"]
 enabled = true
 
-[plugins."browser-use@openai-bundled"]
-enabled = true
-
 [plugins."documents@openai-primary-runtime"]
 enabled = true
 
@@ -69,13 +67,16 @@ enabled = true
 [plugins."presentations@openai-primary-runtime"]
 enabled = true
 
+[plugins."browser-use@openai-bundled"]
+enabled = true
+
 [marketplaces.openai-bundled]
-last_updated = "2026-04-28T07:08:34Z"
+last_updated = "2026-05-01T15:42:40Z"
 source_type = "local"
 source = "/Users/haru256/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-04-28T07:50:30Z"
+last_updated = "2026-05-01T15:50:45Z"
 source_type = "local"
 source = "/Users/haru256/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
@@ -93,7 +94,7 @@ approval_mode = "approve"
 
 [tui]
 status_line = ["current-dir", "git-branch", "model-with-reasoning", "used-tokens", "context-remaining", "five-hour-limit", "weekly-limit"]
-theme = "catppuccin-mocha"
+theme = "catppuccin-latte"
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4

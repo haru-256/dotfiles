@@ -6,7 +6,12 @@ return {
   build = ":TSUpdate",
   opts = {
     -- 今の設定で使う言語だけを最小限インストールする。
-    ensure_installed = { "lua", "python", "vim", "vimdoc", "query" },
+    ensure_installed = {
+      "lua", "python", "vim", "vimdoc", "query",
+      "go", "gomod", "gosum",
+      "bash", "json", "toml", "yaml",
+      "markdown", "markdown_inline",
+    },
   },
   config = function(_, opts)
     local ts = require("nvim-treesitter")
@@ -20,7 +25,10 @@ return {
     ts.install(opts.ensure_installed):wait(300000)
 
     vim.api.nvim_create_autocmd("FileType", {
-      pattern = { "lua", "python", "vim", "query", "help" },
+      pattern = {
+        "lua", "python", "vim", "query", "help",
+        "go", "bash", "json", "toml", "yaml", "markdown",
+      },
       callback = function(args)
         -- Treesitter ベースの構文ハイライトをそのバッファで有効にする。
         pcall(vim.treesitter.start, args.buf)

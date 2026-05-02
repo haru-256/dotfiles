@@ -121,3 +121,5 @@ bind \c] "ghq-fzf && commandline -f repaint"
 # for __fish_use_subcommand
 fish_add_path /opt/homebrew/Cellar/fish/4.0.0/share/fish/functions
 
+alias oc="OPENCODE_ENABLE_EXA=1 opencode"
+

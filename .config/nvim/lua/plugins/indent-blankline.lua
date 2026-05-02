@@ -26,9 +26,9 @@ return {
   },
   config = function(_, opts)
     local hooks = require("ibl.hooks")
-    local palette = require("catppuccin.palettes").get_palette("mocha")
+    local palette = require("catppuccin.palettes").get_palette("latte")
 
-    -- catppuccin mocha の色に合わせて、通常のガイドは控えめに、
+    -- catppuccin latte の色に合わせて、通常のガイドは控えめに、
     -- active scope だけ少し目立つ色にする。
     hooks.register(hooks.type.HIGHLIGHT_SETUP, function()
       vim.api.nvim_set_hl(0, "IblIndent", { fg = palette.surface2, nocombine = true })

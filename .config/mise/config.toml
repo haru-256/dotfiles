@@ -39,6 +39,7 @@ claude = "latest"
 codex = "latest"
 copilot-cli = "latest"
 opencode = "latest"
+helix = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = []
