@@ -13,7 +13,7 @@ kustomize = "latest"
 neovim = "latest"
 node = "25"
 protoc = "latest"
-python = "3.12.13"
+python = "3.12"
 ripgrep = "latest"
 rust = "latest"
 terraform = "latest"
@@ -46,5 +46,5 @@ idiomatic_version_file_enable_tools = []
 experimental = true
 
 [env]
-CLOUDSDK_PYTHON="~/.local/share/mise/installs/python/3.12.13/bin/python"
+CLOUDSDK_PYTHON="{{env.HOME}}/.local/share/mise/installs/python/3.12.13/bin/python"
 
