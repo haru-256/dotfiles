@@ -10,10 +10,16 @@ return {
     -- 各プラグインの UI を catppuccin latte で統一する。
     integrations = {
       blink_cmp = true,
+      bufferline = true,
+      flash = true,
+      fzf = true,
       gitsigns = true,
       indent_blankline = { enabled = true },
+      mini = true,
       neotree = true,
-      telescope = { enabled = true },
+      noice = true,
+      notify = true,
+      snacks = true,
       treesitter = true,
       which_key = true,
       trouble = true,

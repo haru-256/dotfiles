@@ -5,6 +5,9 @@ vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory in Oil"
 vim.keymap.set("n", "<C-n>", "<cmd>Neotree filesystem reveal right toggle<cr>", {
   desc = "Neo-tree (right)",
 })
+vim.keymap.set("n", "<leader>e", "<cmd>Neotree filesystem reveal right toggle<cr>", {
+  desc = "Explorer (neo-tree)",
+})
 
 -- 定義ジャンプなどで移動した後、ひとつ前の場所へ戻る。
 vim.keymap.set("n", "gb", "<C-o>", { desc = "Go back in jumplist" })
@@ -12,31 +15,60 @@ vim.keymap.set("n", "gb", "<C-o>", { desc = "Go back in jumplist" })
 -- よく使う基本操作。
 vim.keymap.set("n", "<leader>w", "<cmd>write<cr>", { desc = "Save file" })
 
--- 行コメントの toggle は残しつつ、`gb` は back に使えるようにする。
-vim.keymap.set("n", "gc", "<Plug>(comment_toggle_linewise)", { desc = "Comment toggle linewise" })
-vim.keymap.set("x", "gc", "<Plug>(comment_toggle_linewise_visual)", { desc = "Comment toggle linewise" })
-vim.keymap.set("n", "gcc", function()
-  return vim.v.count == 0 and "<Plug>(comment_toggle_linewise_current)" or "<Plug>(comment_toggle_linewise_count)"
-end, { expr = true, desc = "Comment toggle current line" })
+-- fzf-lua でファイルや文字列を検索する。
+vim.keymap.set("n", "<leader><space>", function()
+  require("fzf-lua").files()
+end, { desc = "Find files" })
 
--- Telescope でファイルや文字列を検索する。
+vim.keymap.set("n", "<leader>/", function()
+  require("fzf-lua").live_grep()
+end, { desc = "Live grep" })
+
+vim.keymap.set("n", "<leader>,", function()
+  require("fzf-lua").buffers()
+end, { desc = "Buffers" })
+
 vim.keymap.set("n", "<leader>ff", function()
-  require("telescope.builtin").find_files()
+  require("fzf-lua").files()
 end, { desc = "Find files" })
 
 vim.keymap.set("n", "<leader>fg", function()
-  require("telescope.builtin").live_grep()
+  require("fzf-lua").live_grep()
 end, { desc = "Live grep" })
 
 vim.keymap.set("n", "<leader>fb", function()
-  require("telescope.builtin").buffers()
+  require("fzf-lua").buffers()
 end, { desc = "Buffers" })
 
 vim.keymap.set("n", "<leader>fh", function()
-  require("telescope.builtin").help_tags()
+  require("fzf-lua").helptags()
 end, { desc = "Help tags" })
 
+vim.keymap.set("n", "<leader>fr", function()
+  require("fzf-lua").oldfiles()
+end, { desc = "Recent files" })
+
+vim.keymap.set("n", "<leader>fc", function()
+  require("fzf-lua").files({ cwd = vim.fn.stdpath("config") })
+end, { desc = "Find config file" })
+
+vim.keymap.set("n", "<leader>gs", function()
+  require("fzf-lua").git_status()
+end, { desc = "Git status" })
+
+vim.keymap.set("n", "<leader>gc", function()
+  require("fzf-lua").git_commits()
+end, { desc = "Git commits" })
+
+vim.keymap.set("n", "<leader>gd", function()
+  require("fzf-lua").git_diff()
+end, { desc = "Git diff" })
+
 -- LSP/diagnostic 系の補助操作。
+vim.keymap.set("n", "<leader>cf", function()
+  require("conform").format({ async = true, lsp_format = "fallback" })
+end, { desc = "Format buffer" })
+
 vim.keymap.set("n", "<leader>lf", function()
   require("conform").format({ async = true, lsp_format = "fallback" })
 end, { desc = "Format buffer" })

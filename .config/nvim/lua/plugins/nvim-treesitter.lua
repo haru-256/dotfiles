@@ -13,6 +13,9 @@ return {
       "markdown", "markdown_inline",
     },
   },
+  dependencies = {
+    "nvim-treesitter/nvim-treesitter-textobjects",
+  },
   config = function(_, opts)
     local ts = require("nvim-treesitter")
 

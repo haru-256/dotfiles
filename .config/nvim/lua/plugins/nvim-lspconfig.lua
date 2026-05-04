@@ -36,11 +36,22 @@ return {
         vim.keymap.set("n", "<leader>lr", vim.lsp.buf.rename, vim.tbl_extend("force", opts, {
           desc = "Rename symbol",
         }))
+        vim.keymap.set("n", "<leader>cr", vim.lsp.buf.rename, vim.tbl_extend("force", opts, {
+          desc = "Rename symbol",
+        }))
         vim.keymap.set({ "n", "v" }, "<leader>la", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, {
           desc = "Code action",
         }))
+        vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, vim.tbl_extend("force", opts, {
+          desc = "Code action",
+        }))
         vim.keymap.set("n", "<leader>ls", function()
-          require("telescope.builtin").lsp_document_symbols()
+          require("fzf-lua").lsp_document_symbols()
+        end, vim.tbl_extend("force", opts, {
+          desc = "Document symbols",
+        }))
+        vim.keymap.set("n", "<leader>cs", function()
+          require("fzf-lua").lsp_document_symbols()
         end, vim.tbl_extend("force", opts, {
           desc = "Document symbols",
         }))

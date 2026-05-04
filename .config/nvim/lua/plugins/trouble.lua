@@ -14,12 +14,12 @@ return {
       desc = "Buffer Diagnostics (Trouble)",
     },
     {
-      "<leader>cs",
+      "<leader>xs",
       "<cmd>Trouble symbols toggle focus=false<cr>",
       desc = "Symbols (Trouble)",
     },
     {
-      "<leader>cl",
+      "<leader>xl",
       "<cmd>Trouble lsp toggle focus=false win.position=right<cr>",
       desc = "LSP List (Trouble)",
     },
@@ -32,6 +32,28 @@ return {
       "<leader>xQ",
       "<cmd>Trouble qflist toggle<cr>",
       desc = "Quickfix List (Trouble)",
+    },
+    {
+      "[q",
+      function()
+        if require("trouble").is_open() then
+          require("trouble").prev({ skip_groups = true, jump = true })
+        else
+          pcall(vim.cmd.cprev)
+        end
+      end,
+      desc = "Previous quickfix item",
+    },
+    {
+      "]q",
+      function()
+        if require("trouble").is_open() then
+          require("trouble").next({ skip_groups = true, jump = true })
+        else
+          pcall(vim.cmd.cnext)
+        end
+      end,
+      desc = "Next quickfix item",
     },
   },
 }
