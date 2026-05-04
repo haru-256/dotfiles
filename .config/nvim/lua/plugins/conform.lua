@@ -4,11 +4,12 @@ return {
   opts = {
     formatters_by_ft = {
       go = { "goimports", "gofmt" },
+      lua = { "stylua" },
       python = { "ruff_format" },
     },
     format_on_save = function(bufnr)
       local ft = vim.bo[bufnr].filetype
-      if ft == "go" or ft == "python" then
+      if ft == "go" or ft == "lua" or ft == "python" then
         return {
           timeout_ms = 500,
           lsp_format = "fallback",
