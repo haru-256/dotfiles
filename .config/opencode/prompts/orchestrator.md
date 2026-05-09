@@ -40,7 +40,7 @@ After the plan body is written, always append these living-document sections at 
 <!-- Implementer appends one line per attempt: [YYYY-MM-DD] attempt #N → STATUS | commit-or-failure-signature -->
 
 ## Review Findings
-<!-- This template is also defined in commands/plan.md. Keep them in sync (verified by Task 7 Step 7). -->
+<!-- This template is also defined in commands/plan.md. Keep them in sync on every edit. -->
 
 ### Reviewer Raw Findings
 <!-- Orchestrator copies @reviewer's structured findings verbatim here when invoking @reviewer
