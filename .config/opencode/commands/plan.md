@@ -15,7 +15,17 @@ Rules:
   <!-- Implementer appends one line per attempt: [YYYY-MM-DD] attempt #N → STATUS | commit-or-failure-signature -->
 
   ## Review Findings
-  <!-- Reviewer appends one line per review: [YYYY-MM-DD] ARTIFACT_TYPE → VERDICT | key issue -->
+  <!-- This template is also defined in prompts/orchestrator.md. Keep them in sync on every edit. -->
+
+  ### Reviewer Raw Findings
+  <!-- Orchestrator copies @reviewer's structured findings verbatim here when invoking @reviewer
+       during a workflow. Direct /review-* calls do not write here.
+       Raw findings are review input (audit history), not implementation instructions. -->
+
+  ### Orchestrator Adjudication
+  <!-- Orchestrator appends adjudication tables for orchestrated workflow reviews.
+       Only ACCEPT rows are implementation instructions:
+       | ID | Severity | Decision | Reason | Action | -->
 
   ## Deviations from Plan
   <!-- Implementer documents intentional deviations and reasons -->
