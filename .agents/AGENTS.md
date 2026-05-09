@@ -82,6 +82,16 @@ OpenCode の通常入口は `orchestrator` を使う。
 - 意味のある成果物のレビュー → `@reviewer`（`/review-plan`, `/review-impl`, `/review-adr`, `/review-docs` を使って ARTIFACT_TYPE を指定）
 - `@implementer` が同じ失敗を2回繰り返した → `@arbiter` に相談
 
+**Reviewer findings の取り扱い:**
+- `@reviewer` は構造化 findings を inline で返すのみ。plan には書き込まない（**単一書き込み主体: orchestrator のみ**）。
+- `@orchestrator` は workflow 内で `@reviewer` を呼んだ場合、受け取った findings を verbatim で plan の `Review Findings > Reviewer Raw Findings` に転記する。
+- 続けて `@orchestrator` は raw findings を `ACCEPT / REJECT / DEFER / NEEDS_CONTEXT / ESCALATE` に分類し、採否を `Review Findings > Orchestrator Adjudication` に表形式（| ID | Severity | Decision | Reason | Action |）で記録する。
+- raw findings はレビュー入力（監査履歴）であり、そのまま実装指示として扱わない。
+- DEFER は plan の Open Questions セクションにも転記して追跡する。
+- `@implementer` には ACCEPT 分のみを渡す。
+- ESCALATE は `@arbiter` 呼び出し前に必ずユーザーに確認する。
+- `/review-*` 直接呼び出しは reviewer が inline で findings を返すだけ。plan 自動保存は行わない（user が必要なら手で転記する）。
+
 **Plan as source of truth:**
 - plan ファイルが存在する場合、plan ファイルを実装・レビューの基準にする。
 - chat 履歴だけに依存しない。
