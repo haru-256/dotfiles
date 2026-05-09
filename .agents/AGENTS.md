@@ -70,6 +70,31 @@
 - 未インストールなら `mise` での導入を提案する
 - ファイル検索・パターン検索には `rg`・`fd` などの高速ツールを積極的に使う
 
+## OpenCode Balanced Workflow
+
+OpenCode の通常入口は `orchestrator` を使う。
+
+**ルーティング方針:**
+- typo・1行修正・README 小修正 → `@implementer` 直行
+- どこを触るか不明 → `@explorer` で調査してから判断
+- 中規模以上の機能 → `@orchestrator` 経由で探索・計画・実装・レビューを調整
+- plan / ADR / README / docs の作成 → `@orchestrator`（writing-plans スキルを活用）
+- 意味のある成果物のレビュー → `@reviewer`（`/review-plan`, `/review-impl`, `/review-adr`, `/review-docs` を使って ARTIFACT_TYPE を指定）
+- `@implementer` が同じ失敗を2回繰り返した → `@arbiter` に相談
+
+**Plan as source of truth:**
+- plan ファイルが存在する場合、plan ファイルを実装・レビューの基準にする。
+- chat 履歴だけに依存しない。
+- plan には実装ログ・レビュー所見・逸脱記録・未解決事項のセクションを設けて状態を引き継ぐ。
+
+**`@arbiter` の使用条件:**
+- `@implementer` が同種の失敗を2回繰り返した
+- `@reviewer` が ESCALATE を返した
+- 設計判断が割れた
+- API 境界・state schema・IAM・データモデル・セキュリティに影響する変更
+
+**`@arbiter` は常用しない。** 同じ問題で2回相談しても解決しない場合は、人間にエスカレートする。
+
 ---
 
 ## Git 運用
