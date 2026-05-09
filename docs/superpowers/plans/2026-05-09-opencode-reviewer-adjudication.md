@@ -641,8 +641,10 @@ function extract(filepath) {
   const start = txt.indexOf('## Review Findings');
   if (start < 0) throw new Error(`'## Review Findings' not found in ${filepath}`);
   // template ブロック（## から次の ## または `` まで）を抽出
+  // 注意: plan.md の '## Deviations from Plan' は list 配下で 2-space インデントが付くため、
+  // \s* で leading whitespace を許容する
   const after = txt.slice(start + 1);
-  const endRel = after.search(/\n## |\n```/);
+  const endRel = after.search(/\n\s*##\s|\n```/);
   const block = endRel < 0 ? txt.slice(start) : txt.slice(start, start + 1 + endRel);
   // インデント、行末空白、空行を正規化（plan.md は list 配下なのでインデントが付く）
   return block
