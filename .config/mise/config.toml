@@ -39,6 +39,7 @@ claude = "latest"
 codex = "latest"
 copilot-cli = "latest"
 opencode = "latest"
+bun = "latest"
 helix = "latest"
 
 [settings]
