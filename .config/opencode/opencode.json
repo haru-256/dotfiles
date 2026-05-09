@@ -136,7 +136,7 @@
       "description": "Hidden last-resort consultation subagent. Diagnoses blocked tasks, redesigns approach, and returns a compact decision. It never edits files.",
       "mode": "subagent",
       "model": "openai/gpt-5.5",
-      "reasoningEffort": "high",
+      "reasoningEffort": "xhigh",
       "textVerbosity": "low",
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/arbiter.md}",
