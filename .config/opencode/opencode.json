@@ -1,0 +1,191 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "orchestrator",
+  // エージェント別のツール制御
+  "agent": {
+    "orchestrator": {
+      "description": "Primary orchestration agent. Plans, delegates, reviews compact reports, and uses Superpowers when appropriate. It does not edit files.",
+      "mode": "primary",
+      "model": "openai/gpt-5.5",
+      "reasoningEffort": "medium",
+      "textVerbosity": "low",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/opencode/prompts/orchestrator.md}",
+      "permission": {
+        "edit": "deny",
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "allow",
+        "todowrite": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": {
+          "*": "deny",
+          "implementer": "allow",
+          "explorer": "allow",
+          "reviewer": "allow",
+          "arbiter": "ask"
+        },
+        "glob": "allow",
+        "list": "allow"
+      }
+    },
+    "implementer": {
+      "description": "Implementation subagent. Makes scoped code changes, runs checks, fixes failures, and reports compact results.",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.6",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/opencode/prompts/implementer.md}",
+      "permission": {
+        "edit": "allow",
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "allow",
+        "todowrite": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": "deny",
+        "glob": "allow",
+        "list": "allow"
+      }
+    },
+    "explorer": {
+      "description": "Read-only deep repository exploration subagent. Finds relevant files, dependencies, data/control flow, and likely impact radius. Returns compact reports.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/opencode/prompts/explorer.md}",
+      "permission": {
+        "edit": "deny",
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "allow",
+        "todowrite": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": "deny",
+        "glob": "allow",
+        "list": "allow"
+      }
+    },
+    "reviewer": {
+      "description": "Read-only diff review subagent. Checks correctness, spec compliance, security, tests, maintainability, and over-engineering.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.4",
+      "reasoningEffort": "medium",
+      "textVerbosity": "low",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/opencode/prompts/reviewer.md}",
+      "permission": {
+        "edit": "deny",
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "allow",
+        "todowrite": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": "deny",
+        "glob": "allow",
+        "list": "allow"
+      }
+    },
+    "arbiter": {
+      "description": "Hidden last-resort consultation subagent. Diagnoses blocked tasks, redesigns approach, and returns a compact decision. It never edits files.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.5",
+      "reasoningEffort": "high",
+      "textVerbosity": "low",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/opencode/prompts/arbiter.md}",
+      "permission": {
+        "edit": "deny",
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "allow",
+        "todowrite": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": "deny",
+        "glob": "allow",
+        "list": "allow"
+      }
+    }
+  },
+  "permission": {
+    // まずすべてを許可
+    "edit": "allow",
+    "read": "allow",
+    "bash": {
+      "*": "allow",
+      "rm -rf *": "deny", // 破壊的コマンドは禁止
+      "sudo *": "ask" // sudo系は都度確認
+    },
+    "external_directory": "allow",
+    "webfetch": "allow",
+    "websearch": "allow",
+    "question": "allow",
+    "codesearch": "allow",
+    "skill": "allow",
+    "todowrite": "allow",
+    "grep": "allow",
+    "lsp": "allow",
+    "task": "allow",
+    "glob": "allow",
+    "list": "allow"
+  },
+  "mcp": {
+    // ドキュメント検索
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp"
+    }
+  },
+  "plugin": [
+    "superpowers@git+https://github.com/obra/superpowers.git"
+  ]
+}
