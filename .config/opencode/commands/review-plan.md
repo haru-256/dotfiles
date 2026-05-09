@@ -10,4 +10,4 @@ $ARGUMENTS
 
 Apply only the plan review framework. Generate critical thinking findings (failure modes, steel-man alternative, unstated assumptions, senior engineer rejection point) before forming the verdict.
 
-Update the plan's Review Findings section with a one-line entry.
+List individual issues under Critical issues / Non-blocking suggestions using the Finding format defined in reviewer.md (ID / Severity / Confidence / Category / Evidence / Why / Recommended action / Must fix before merge).
