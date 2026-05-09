@@ -4,7 +4,7 @@
 
 **Goal:** OpenCode のエージェントオーケストレーション設計に9つの改善を加え、伝言ゲーム軽減・レビュー品質向上・状態継続性・自動化エスカレーションを実現する。
 
-**Architecture:** 既存の opencode.json と prompts/ / commands/ を改訂する。`doc-planner` を廃止して orchestrator に統合、reviewer を ARTIFACT_TYPE 分岐型に変更、plan を living document 化、failure_signature による自動エスカレーション、AGENTS.md による共通ルールの DRY 化。
+**Architecture:** 既存の5エージェント構成（orchestrator, implementer, explorer, reviewer, arbiter）はそのまま維持しつつ、orchestrator に docs 編集権限を付与し、reviewer を ARTIFACT_TYPE 分岐型に変更、plan を living document 化、failure_signature による自動エスカレーション、AGENTS.md による共通ルールの DRY 化を行う。doc-planner は設計案として検討されたが導入しない。
 
 **Tech Stack:** OpenCode (jsonc 設定), Markdown プロンプト, Superpowers plan / skill
 
@@ -19,32 +19,31 @@
 
 ---
 
-### Task 1: opencode.json から doc-planner を削除し、orchestrator に統合する
+### Task 1: opencode.json を更新する（orchestrator docs 権限・reviewer→arbiter 連携）
 
-**改善点 #1 を反映。** doc-planner エージェントを削除し、orchestrator に docs / ADR / README の編集権限を付与する。同時に reviewer から arbiter を呼べるようにし、explorer / reviewer の mode を subagent 専用にする。
+**改善点 #1, #10 を反映。** orchestrator に docs / ADR / README の編集権限を付与し、reviewer から arbiter を呼べるようにする。explorer と reviewer はすでに mode: subagent なので変更不要。doc-planner は存在しないため削除操作も不要。
+
+**現状確認済み:**
+- orchestrator: `edit: "deny"` → docs 系の edit 権限を追加
+- reviewer: `task: "deny"` → `{ "*": "deny", "arbiter": "ask" }` に変更
+- explorer / reviewer: すでに `mode: "subagent"` → 変更不要
 
 **Files:**
 - Modify: `dotfiles/.config/opencode/opencode.json`
 
-- [ ] **Step 1: 現在の opencode.json をバックアップとして git commit 状態を確認する**
+- [ ] **Step 1: 現在の opencode.json が clean 状態であることを確認する**
 
 ```bash
 cd /Users/haru256/Documents/projects/dotfiles
 git status .config/opencode/opencode.json
 ```
 
-期待値: clean（直前の作業はマージ済みでクリーン状態）
+期待値: 変更なし（マージ済みのクリーン状態）
 
-- [ ] **Step 2: orchestrator の permission を更新する**
+- [ ] **Step 2: orchestrator の `edit` permission を更新する**
 
-`dotfiles/.config/opencode/opencode.json` の `agent.orchestrator.permission.edit` を以下に変更：
+`dotfiles/.config/opencode/opencode.json` の orchestrator セクションの `"edit": "deny",` を以下に変更：
 
-変更前：
-```json
-"edit": "deny",
-```
-
-変更後：
 ```json
 "edit": {
   "*": "deny",
@@ -55,25 +54,24 @@ git status .config/opencode/opencode.json
 },
 ```
 
-- [ ] **Step 3: orchestrator の task permission から doc-planner を削除する**
+- [ ] **Step 3: orchestrator の description を更新する**
 
-`agent.orchestrator.permission.task` の中の `doc-planner` 行を削除する。
-他の task permission（implementer, explorer, reviewer, arbiter）は維持する。
-
-- [ ] **Step 4: explorer と reviewer の mode を subagent に変更する**
-
-`agent.explorer.mode` および `agent.reviewer.mode` を `"all"` から `"subagent"` に変更する（誤って primary 起動を防ぐため）。
-
-- [ ] **Step 5: reviewer に arbiter を呼ぶ権限を追加する**
-
-`agent.reviewer.permission.task` を以下のように変更する：
+orchestrator の description を更新して、docs 作成責務を明記する：
 
 変更前：
 ```json
-"task": "deny",
+"description": "Primary orchestration agent. Plans, delegates, reviews compact reports, and uses Superpowers when appropriate. It does not edit files.",
 ```
 
 変更後：
+```json
+"description": "Primary orchestration agent. Plans, delegates, writes plans/ADRs/README/docs, and uses Superpowers when appropriate. Does not edit source code.",
+```
+
+- [ ] **Step 4: reviewer の `task` permission を更新する**
+
+reviewer セクションの `"task": "deny",` を以下に変更：
+
 ```json
 "task": {
   "*": "deny",
@@ -81,33 +79,23 @@ git status .config/opencode/opencode.json
 },
 ```
 
-- [ ] **Step 6: doc-planner エージェント定義を削除する**
-
-`agent` オブジェクトから `doc-planner` キー全体を削除する。
-
-注意: 現状 doc-planner は opencode.json には存在しない（v2 設計案ではあるが現実装では未追加）。確認のため：
+- [ ] **Step 5: 変更を jsonc として確認する**
 
 ```bash
-grep -n "doc-planner" /Users/haru256/Documents/projects/dotfiles/.config/opencode/opencode.json
+grep -A3 '"edit"' /Users/haru256/Documents/projects/dotfiles/.config/opencode/opencode.json | head -20
+grep -A4 '"task"' /Users/haru256/Documents/projects/dotfiles/.config/opencode/opencode.json | head -30
 ```
 
-期待値: 出力なし（doc-planner は実装されていない）。出力があれば削除する。
+期待値:
+- orchestrator の edit が `{ "*": "deny", "docs/**": "allow", ... }` になっている
+- reviewer の task が `{ "*": "deny", "arbiter": "ask" }` になっている
 
-- [ ] **Step 7: 変更を JSON として valid か確認する**
-
-```bash
-cat /Users/haru256/Documents/projects/dotfiles/.config/opencode/opencode.json | \
-  sed 's|//.*||' | python3 -c "import sys, json; json.loads(sys.stdin.read())" && echo "VALID"
-```
-
-期待値: `VALID`（jsonc コメントを除去後に JSON として valid）
-
-- [ ] **Step 8: コミットする**
+- [ ] **Step 6: コミットする**
 
 ```bash
 cd /Users/haru256/Documents/projects/dotfiles
 git add .config/opencode/opencode.json
-git commit -m "feat(opencode): orchestrator に docs 権限統合・reviewer→arbiter 連携を追加"
+git commit -m "feat(opencode): orchestrator に docs 権限追加・reviewer→arbiter 連携を設定"
 ```
 
 ---
@@ -1040,7 +1028,7 @@ git log --oneline main..HEAD
 
 | 改善点                                       | Tasks   |
 | ----------------------------------------- | ------- |
-| #1 doc-planner 廃止・orchestrator 統合         | 1, 2, 7 |
+| #1 orchestrator に docs 権限付与（doc-planner は未追加のまま） | 1, 2, 7 |
 | #2 reviewer ARTIFACT_TYPE 分岐              | 4, 7    |
 | #3 critical thinking elicitation          | 4       |
 | #4 plan を living document 化               | 2, 8, 10 |
@@ -1050,7 +1038,7 @@ git log --oneline main..HEAD
 | #9 AGENTS.md による共通ルール集約                  | 8, 9    |
 | #10 reviewer から arbiter を呼べる             | 1, 6    |
 | minor: /explore コマンド                      | 7       |
-| minor: explorer/reviewer は subagent 専用    | 1       |
+| minor: explorer/reviewer は subagent（変更不要・確認済み） | -       |
 
 (改善点 #8 explorer model tier 化は今回対象外。)
 
