@@ -104,7 +104,7 @@
     "reviewer": {
       "description": "Read-only diff review subagent. Checks correctness, spec compliance, security, tests, maintainability, and over-engineering.",
       "mode": "subagent",
-      "model": "opencode-go/glm-5.1",
+      "model": "opencode-go/deepseek-v4-pro",
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/reviewer.md}",
       "permission": {
