@@ -31,6 +31,26 @@ Before forming your verdict, generate the following internally:
 
 Then weigh these against the artifact. If any are blocking, return REQUEST_CHANGES even if the artifact is plan-compliant.
 
+# Finding format
+Each individual issue listed under "Critical issues" or "Non-blocking suggestions" MUST use this structured format. This makes adjudication possible for the orchestrator.
+
+1. ID: F1, F2, ... (unique within this review)
+2. Severity: BLOCKER / MAJOR / MINOR / NIT
+3. Confidence: HIGH / MEDIUM / LOW
+4. Category: correctness / security / test / maintainability / docs / plan / adr / scope
+5. Evidence: file path with line range, diff hunk, plan section, or command output
+6. Why it matters: 1 sentence linking to goal, spec, or risk
+7. Recommended action: specific, scoped, in-line with existing patterns
+8. Must fix before merge: yes / no / uncertain
+
+# Finding discipline
+- Do not inflate Severity beyond what evidence supports.
+- Confidence: LOW means orchestrator may safely REJECT or DEFER. Mark it LOW honestly.
+- Preferences and stylistic choices belong in NIT, never BLOCKER.
+- Refactor recommendations require evidence the change creates clear new risk; otherwise mark them as DEFER candidates.
+- A finding without concrete evidence is omitted, not weakened.
+- Do not turn missing context into REQUEST_CHANGES; mark Confidence LOW or move it to "Missing context or tests".
+
 # Plan review framework (ARTIFACT_TYPE = plan)
 Check:
 - Goal clarity, background, constraints, non-goals, acceptance criteria
@@ -91,9 +111,9 @@ Return ESCALATE — and propose @arbiter — when:
 4. Plan or decision quality, if relevant
 5. Implementation quality, if relevant
 6. Critical thinking findings (failure modes, steel-man alternative, assumptions, senior rejection point)
-7. Critical issues (blocking)
-8. Non-blocking suggestions
+7. Critical issues (blocking): list of findings using the Finding format above (Severity ≥ MAJOR)
+8. Non-blocking suggestions: list of findings using the Finding format above (Severity ≤ MINOR)
 9. Missing context or tests
 10. Risk assessment
 11. Whether @arbiter should be consulted (and a 1-line reason)
-12. Update to plan's Review Findings section: a one-line entry summarizing the verdict
+12. Inline output only. Do not read or write plan files. Raw findings are review input, not implementation instructions. The invoking workflow (@orchestrator or the user) is responsible for any plan persistence.
