@@ -1,3 +1,9 @@
+local function pad_header(lines, width)
+  return table.concat(vim.tbl_map(function(line)
+    return line .. string.rep(" ", math.max(0, width - vim.fn.strdisplaywidth(line)))
+  end, lines), "\n")
+end
+
 return {
   {
     "folke/snacks.nvim",
@@ -5,6 +11,53 @@ return {
     lazy = false,
     opts = {
       bigfile = { enabled = true },
+      dashboard = {
+        enabled = true,
+        width = 64,
+        pane_gap = 4,
+        preset = {
+          header = pad_header({
+            "",
+            "                                              ",
+            "       ████ ██████           █████      ██",
+            "      ███████████             █████ ",
+            "      █████████ ███████████████████ ███   ███████████",
+            "     █████████  ███    █████████████ █████ ██████████████",
+            "    █████████ ██████████ █████████ █████ █████ ████ █████",
+            "  ███████████ ███    ███ █████████ █████ █████ ████ █████",
+            " ██████  █████████████████████ ████ █████ █████ ████ ██████",
+            "",
+          }, 71),
+          keys = {
+            { icon = " ", key = "f", desc = "Find files", action = ":lua Snacks.dashboard.pick('files')" },
+            { icon = " ", key = "g", desc = "Live grep", action = ":lua Snacks.dashboard.pick('live_grep')" },
+            { icon = " ", key = "r", desc = "Recent files", action = ":lua Snacks.dashboard.pick('oldfiles')" },
+            {
+              icon = " ",
+              key = "c",
+              desc = "Config",
+              action = ":lua Snacks.dashboard.pick('files', { cwd = vim.fn.stdpath('config') })",
+            },
+            {
+              icon = " ",
+              key = "s",
+              desc = "Restore session",
+              action = function()
+                require("persistence").load()
+              end,
+            },
+            { icon = "󰒲 ", key = "l", desc = "Lazy", action = ":Lazy" },
+            { icon = " ", key = "q", desc = "Quit", action = ":qa" },
+          },
+        },
+        sections = {
+          { section = "header" },
+          { icon = " ", title = "Actions", section = "keys", indent = 2, padding = 1 },
+          { icon = " ", title = "Recent Files", section = "recent_files", indent = 2, padding = { 2, 2 } },
+          { icon = " ", title = "Projects", section = "projects", indent = 2, padding = 2 },
+          { section = "startup" },
+        },
+      },
       input = { enabled = true },
       notifier = { enabled = true },
       quickfile = { enabled = true },

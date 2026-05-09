@@ -13,6 +13,7 @@ return {
     vim.api.nvim_create_autocmd("LspAttach", {
       callback = function(args)
         local opts = { buffer = args.buf }
+        local client = vim.lsp.get_client_by_id(args.data.client_id)
 
         -- LSP が attach したバッファだけに、定義ジャンプなどのキーマップを生やす。
         vim.keymap.set("n", "gd", vim.lsp.buf.definition, vim.tbl_extend("force", opts, {
@@ -55,8 +56,74 @@ return {
         end, vim.tbl_extend("force", opts, {
           desc = "Document symbols",
         }))
+
+        if client and client:supports_method("textDocument/documentHighlight", args.buf) then
+          local group = vim.api.nvim_create_augroup("lsp-document-highlight", { clear = false })
+          vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+            buffer = args.buf,
+            group = group,
+            callback = vim.lsp.buf.document_highlight,
+          })
+          vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+            buffer = args.buf,
+            group = group,
+            callback = vim.lsp.buf.clear_references,
+          })
+          vim.api.nvim_create_autocmd("LspDetach", {
+            group = vim.api.nvim_create_augroup("lsp-document-highlight-detach", { clear = true }),
+            callback = function(detach_args)
+              vim.lsp.buf.clear_references()
+              vim.api.nvim_clear_autocmds({ group = "lsp-document-highlight", buffer = detach_args.buf })
+            end,
+          })
+        end
+
+        if client and client:supports_method("textDocument/inlayHint", args.buf) then
+          vim.keymap.set("n", "<leader>lh", function()
+            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = args.buf }), { bufnr = args.buf })
+          end, vim.tbl_extend("force", opts, {
+            desc = "Toggle inlay hints",
+          }))
+        end
       end,
     })
+
+    vim.lsp.config("lua_ls", {
+      cmd = { "lua-language-server" },
+      capabilities = capabilities,
+      on_init = function(client)
+        client.server_capabilities.documentFormattingProvider = false
+        if client.workspace_folders then
+          local path = client.workspace_folders[1].name
+          if path ~= vim.fn.stdpath("config") and (vim.uv.fs_stat(path .. "/.luarc.json") or vim.uv.fs_stat(path .. "/.luarc.jsonc")) then
+            return
+          end
+        end
+
+        client.config.settings.Lua = vim.tbl_deep_extend("force", client.config.settings.Lua, {
+          runtime = {
+            version = "LuaJIT",
+            path = { "lua/?.lua", "lua/?/init.lua" },
+          },
+          workspace = {
+            checkThirdParty = false,
+            library = vim.tbl_extend("force", vim.api.nvim_get_runtime_file("", true), {
+              "${3rd}/luv/library",
+            }),
+          },
+        })
+      end,
+      settings = {
+        Lua = {
+          format = {
+            enable = false,
+          },
+        },
+      },
+    })
+    if vim.fn.executable("lua-language-server") == 1 then
+      vim.lsp.enable("lua_ls")
+    end
 
     -- Go の定義ジャンプや補完などを gopls で提供する。
     vim.lsp.config("gopls", {

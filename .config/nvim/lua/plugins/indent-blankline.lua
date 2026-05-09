@@ -5,11 +5,13 @@ return {
   opts = {
     -- インデントの階層ごとに縦線を表示する。
     indent = {
+      char = "▏",
       highlight = "IblIndent",
     },
     -- カーソル位置に対応するスコープのインデントだけ、少し明るい色で強調する。
     scope = {
       enabled = true,
+      char = "▏",
       include = {
         node_type = {
           python = {

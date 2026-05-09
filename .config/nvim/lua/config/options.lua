@@ -6,9 +6,28 @@ vim.opt.cursorline = true
 vim.opt.termguicolors = true
 vim.opt.background = "light"
 vim.opt.winborder = "rounded"
+vim.opt.mouse = "a"
+vim.opt.showmode = false
 
 -- LSP の診断アイコンが出ても行番号列の幅が変わらないようにする。
 vim.opt.signcolumn = "yes"
+vim.diagnostic.config({
+  update_in_insert = false,
+  severity_sort = true,
+  float = { border = "rounded", source = "if_many" },
+  underline = { severity = { min = vim.diagnostic.severity.WARN } },
+  virtual_text = true,
+  virtual_lines = false,
+  jump = {
+    on_jump = function(_, bufnr)
+      vim.diagnostic.open_float({
+        bufnr = bufnr,
+        scope = "cursor",
+        focus = false,
+      })
+    end,
+  },
+})
 
 -- スクロール時にカーソルの上下に常に 8 行のコンテキストを保つ。
 vim.opt.scrolloff = 8
@@ -19,6 +38,21 @@ vim.opt.splitbelow = true
 
 -- undo 履歴をファイルに書き出して、再起動後も u で戻れるようにする。
 vim.opt.undofile = true
+vim.opt.breakindent = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+vim.opt.list = true
+vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+vim.opt.inccommand = "split"
+vim.opt.confirm = true
+
+vim.api.nvim_create_autocmd("FileType", {
+  group = vim.api.nvim_create_augroup("go-listchars", { clear = true }),
+  pattern = "go",
+  callback = function()
+    vim.opt_local.listchars = { tab = "▏ ", trail = "·", nbsp = "␣" }
+  end,
+})
 
 -- CursorHold イベントの発火間隔。LSP hover や gitsigns の応答速度に影響する。
 vim.opt.updatetime = 250
@@ -35,3 +69,4 @@ vim.opt.clipboard = "unnamedplus"
 
 -- キーマップの接頭辞として Space を使う。
 vim.g.mapleader = " "
+vim.g.maplocalleader = " "

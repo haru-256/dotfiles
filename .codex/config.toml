@@ -77,12 +77,12 @@ enabled = true
 enabled = true
 
 [marketplaces.openai-bundled]
-last_updated = "2026-05-04T20:44:20Z"
+last_updated = "2026-05-08T04:18:17Z"
 source_type = "local"
 source = "/Users/haru256/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-05-01T15:50:45Z"
+last_updated = "2026-05-08T03:50:37Z"
 source_type = "local"
 source = "/Users/haru256/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
@@ -104,3 +104,6 @@ theme = "catppuccin-latte"
 
 [tui.model_availability_nux]
 "gpt-5.5" = 4
+
+[mcp_servers.openaiDeveloperDocs]
+url = "https://developers.openai.com/mcp"

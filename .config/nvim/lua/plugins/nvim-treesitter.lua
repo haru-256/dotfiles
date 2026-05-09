@@ -9,7 +9,7 @@ return {
     ensure_installed = {
       "lua", "python", "vim", "vimdoc", "query",
       "go", "gomod", "gosum",
-      "bash", "json", "toml", "yaml",
+      "bash", "c", "diff", "html", "json", "luadoc", "toml", "yaml",
       "markdown", "markdown_inline",
     },
   },
@@ -30,7 +30,7 @@ return {
     vim.api.nvim_create_autocmd("FileType", {
       pattern = {
         "lua", "python", "vim", "query", "help",
-        "go", "bash", "json", "toml", "yaml", "markdown",
+        "go", "bash", "c", "diff", "html", "json", "luadoc", "toml", "yaml", "markdown",
       },
       callback = function(args)
         -- Treesitter ベースの構文ハイライトをそのバッファで有効にする。

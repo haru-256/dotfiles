@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Codex から OpenCode ワーカーを呼び出すラッパースクリプト。
+# 指定されたエージェント（実装、テスト修正、調査など）でタスクを実行し、
+# 結果と git diff の統計をレポートとして出力する。
+
+# 引数チェック
+if [[ $# -eq 0 ]]; then
+  echo "usage: $(basename "$0") <task prompt>" >&2
+  exit 64
+fi
+
+# 依存ツール確認
+if ! command -v mise >/dev/null 2>&1; then
+  echo "mise is required because opencode is managed by mise" >&2
+  exit 127
+fi
+
+# リポジトリルートの特定と実行環境（モデル・エージェント・ログディレクトリ）の設定
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$repo_root"
+
+model="${OPENCODE_WORKER_MODEL:-opencode-go/kimi-k2.6}"
+agent="${OPENCODE_WORKER_AGENT:-implementer}"
+variant="${OPENCODE_WORKER_VARIANT:-}"
+skip_permissions="${OPENCODE_WORKER_SKIP_PERMISSIONS:-1}"
+repo_slug="$(printf '%s' "$repo_root" | sed 's#^/##; s#[^A-Za-z0-9._-]#-#g')"
+run_dir="${OPENCODE_WORKER_LOG_DIR:-$HOME/.codex/opencode-runs/$repo_slug}"
+mkdir -p "$run_dir"
+
+# ログ・レポートファイルのパス生成
+timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+log_file="$run_dir/$timestamp.jsonl"
+stderr_file="$run_dir/$timestamp.stderr.log"
+report_file="$run_dir/$timestamp.report.txt"
+
+# タスクプロンプトの取得（すべての引数を結合）
+prompt="$*"
+
+# エージェント別のロール指示を選択
+case "$agent" in
+  codebase-researcher)
+    role_instructions="You are a read-only codebase research worker called by Codex. Identify relevant files, existing patterns, likely tests, and implementation risks. Do not edit files."
+    ;;
+  implementer)
+    role_instructions="You are an implementation worker called by Codex. Make narrow requested changes, run relevant verification, and preserve unrelated user changes."
+    ;;
+  test-fixer)
+    role_instructions="You are a failure-driven test fixer called by Codex. Use the provided failing command output, change only what is needed to make the failure pass, and rerun the failing command."
+    ;;
+  diff-summarizer)
+    role_instructions="You are a read-only diff summarizer called by Codex. Inspect git diff and relevant logs, summarize the change, and identify review focus areas. Do not edit files."
+    ;;
+  refactor-worker)
+    role_instructions="You are a scoped refactor worker called by Codex. Perform only the requested mechanical refactor, preserve behavior, and run relevant verification."
+    ;;
+  docs-worker)
+    role_instructions="You are a documentation worker called by Codex. Update only requested documentation files based on the provided implementation context, and preserve existing style."
+    ;;
+  *)
+    echo "unknown OPENCODE_WORKER_AGENT: $agent" >&2
+    echo "expected one of: codebase-researcher, implementer, test-fixer, diff-summarizer, refactor-worker, docs-worker" >&2
+    exit 65
+    ;;
+esac
+
+# 共通ルールとタスクを含むプロンプトを組み立て
+worker_prompt="$(cat <<EOF
+$role_instructions
+
+Shared rules:
+- Make only the changes requested by Codex.
+- Preserve unrelated user changes.
+- Run the most relevant verification command available for changed files when the role edits files.
+- Do not commit, push, tag, release, merge, rebase, or reset git history.
+- Do not run destructive commands.
+- End with this exact report format:
+STATUS: success | partial | failed
+ROLE: $agent
+CHANGED_FILES:
+TESTS_RUN:
+SUMMARY:
+RISKS:
+NEXT_RECOMMENDATION:
+
+Task:
+$prompt
+EOF
+)"
+
+# OpenCode コマンドの構築
+cmd=(mise exec -- opencode run --model "$model" --agent "$agent" --format json --dir "$repo_root")
+if [[ -n "$variant" ]]; then
+  cmd+=(--variant "$variant")
+fi
+if [[ "$skip_permissions" == "1" || "$skip_permissions" == "true" || "$skip_permissions" == "yes" ]]; then
+  # 非対話実行では permission request が自動拒否されるため、worker 用に明示的に許可する。
+  cmd+=(--dangerously-skip-permissions)
+fi
+
+# 終了コードを保持するため set -e を一時解除して実行
+set +e
+"${cmd[@]}" "$worker_prompt" >"$log_file" 2>"$stderr_file"
+status="$?"
+set -e
+
+# JSONL ログの assistant text だけから最終レポート行を抽出する。
+# tool_use のファイル本文やコマンド出力に含まれる STATUS などを拾わないため。
+extract_final_report_lines() {
+  if command -v jq >/dev/null 2>&1; then
+    final_lines="$(jq -r 'select(.type == "text") | .part.text // empty' "$log_file" \
+      | grep -E "^(STATUS|ROLE|CHANGED_FILES|TESTS_RUN|SUMMARY|RISKS|NEXT_RECOMMENDATION):" \
+      || true)"
+  else
+    final_lines="$(grep -nE '"type":"text".*"(STATUS|ROLE|CHANGED_FILES|TESTS_RUN|SUMMARY|RISKS|NEXT_RECOMMENDATION):' "$log_file" || true)"
+  fi
+
+  if [[ -n "$final_lines" ]]; then
+    printf '%s\n' "$final_lines"
+  else
+    echo "NO_FINAL_REPORT_FOUND"
+  fi
+}
+
+# 実行結果・レポート要約・git diff 統計をレポートファイルに出力
+{
+  echo "OPENCODE_EXIT_STATUS=$status"
+  echo "OPENCODE_LOG_FILE=$log_file"
+  echo "OPENCODE_STDERR_FILE=$stderr_file"
+  echo "OPENCODE_REPORT_FILE=$report_file"
+  echo "OPENCODE_MODEL=$model"
+  echo "OPENCODE_AGENT=$agent"
+  echo "OPENCODE_SKIP_PERMISSIONS=$skip_permissions"
+  echo "FINAL_REPORT_LINES_BEGIN"
+  extract_final_report_lines
+  echo "FINAL_REPORT_LINES_END"
+  # 変更内容の統計を取得してレポートに含める
+  echo "GIT_DIFF_STAT_BEGIN"
+  git diff --stat
+  echo "GIT_DIFF_STAT_END"
+} >"$report_file"
+
+# レポートを標準出力して終了
+cat "$report_file"
+
+exit "$status"
