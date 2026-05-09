@@ -4,7 +4,7 @@
 
 **Goal:** OpenCode のエージェントオーケストレーション設計に9つの改善を加え、伝言ゲーム軽減・レビュー品質向上・状態継続性・自動化エスカレーションを実現する。
 
-**Architecture:** 既存の5エージェント構成（orchestrator, implementer, explorer, reviewer, arbiter）はそのまま維持しつつ、orchestrator に docs 編集権限を付与し、reviewer を ARTIFACT_TYPE 分岐型に変更、plan を living document 化、failure_signature による自動エスカレーション、AGENTS.md による共通ルールの DRY 化を行う。doc-planner は設計案として検討されたが導入しない。
+**Architecture:** 既存の5エージェント構成（orchestrator, implementer, explorer, reviewer, arbiter）はそのまま維持しつつ、orchestrator に docs 編集権限を付与し、reviewer を ARTIFACT_TYPE 分岐型に変更、plan を living document 化（テンプレートファイル不要・orchestrator prompt に指示を埋め込む）、failure_signature による自動エスカレーション、既存の共有 AGENTS.md 更新による共通ルール追記を行う。
 
 **Tech Stack:** OpenCode (jsonc 設定), Markdown プロンプト, Superpowers plan / skill
 
@@ -724,8 +724,20 @@ $ARGUMENTS
 Rules:
 - Use the writing-plans skill when applicable.
 - Save the plan under `docs/superpowers/plans/`.
-- Follow the living-plan template at `docs/superpowers/templates/living-plan-template.md`.
-- Include sections: Implementation Log, Review Findings, Deviations, Open Questions.
+- After the plan body is written, append the following living-document sections at the end (if not already present):
+
+  ## Implementation Log
+  <!-- Implementer appends one line per attempt: [YYYY-MM-DD] attempt #N → STATUS | commit-or-failure-signature -->
+
+  ## Review Findings
+  <!-- Reviewer appends one line per review: [YYYY-MM-DD] ARTIFACT_TYPE → VERDICT | key issue -->
+
+  ## Deviations from Plan
+  <!-- Implementer documents intentional deviations and reasons -->
+
+  ## Open Questions
+  <!-- Any agent adds questions for orchestrator or arbiter -->
+
 - Do not implement the plan.
 - After saving, report the plan path and recommended execution mode.
 ```
@@ -768,227 +780,108 @@ git commit -m "feat(opencode): ARTIFACT_TYPE 別 review コマンドと /explore
 
 ---
 
-### Task 8: AGENTS.md を作成する（共通ルール集約）
+### Task 8: 共有 AGENTS.md の "OpenCode Balanced Workflow" セクションを更新する
 
-**改善点 #9 を反映。** prompt 間で重複していた token policy・workflow rules・plan source-of-truth rules を AGENTS.md に集約する。OpenCode のグローバル AGENTS.md として `~/.config/opencode/AGENTS.md` の位置に置く。
+**改善点 #9 を反映。** 新規ファイルは作成しない。`~/.config/opencode/AGENTS.md` はすでに `dotfiles/.agents/AGENTS.md` へのシンボリックリンクが存在する。この共有ファイルの "OpenCode Balanced Workflow" セクションを拡充し、ルーティング方針・plan as source of truth・arbiter 呼び出し条件を追記する。
 
-**Files:**
-- Create: `dotfiles/.config/opencode/AGENTS.md`
-
-- [ ] **Step 1: AGENTS.md を作成する**
-
-ファイル: `dotfiles/.config/opencode/AGENTS.md`
-
-```md
-# OpenCode Agent Common Rules
-
-These rules apply to all agents in this OpenCode setup. Agent-specific prompts override these only where explicitly stated.
-
-## Source of truth
-
-- When a plan file exists, the plan file is the source of truth for implementation and review.
-- Do not rely only on chat history.
-- Plans live under `docs/superpowers/plans/`.
-- ADRs live under `docs/adr/` or `ADRs/` (use existing convention).
-- Exploration logs (when persisted) live under `docs/superpowers/explorations/`.
-
-## Living plan sections
-
-Plans use the living-plan template. Implementer and reviewer must update these sections during their work:
-- `## Implementation Log` — implementer appends one line per attempt (date, status, commit link).
-- `## Review Findings` — reviewer appends one line per review (date, verdict, key issue if any).
-- `## Deviations from Plan` — implementer documents intentional deviations and reasons.
-- `## Open Questions` — any agent adds questions for orchestrator or arbiter.
-
-## Token policy
-
-- Prefer file paths, compact summaries, git diff, and failing test excerpts.
-- Do not pass full file contents to subagents unless required.
-- Explorer summary report should target under 1500 tokens (the exploration log can be longer).
-- Implementer reports should target under 1500 tokens.
-- Reviewer should inspect plan / ADR / README / docs / diff first.
-- Avoid generated files, lock files, cache directories, and vendored dependencies unless necessary.
-
-## Workflow rules
-
-- Trivial changes (typo, single-line fix, small README tweak): use @implementer directly.
-- Non-trivial features: start with @orchestrator.
-- Use @explorer before reading many files.
-- Plans, ADRs, README, docs are written by @orchestrator (using the writing-plans skill when applicable).
-- Use @reviewer for meaningful or durable artifacts. Use the matching `/review-*` slash command to set ARTIFACT_TYPE.
-- If @implementer reports BLOCKED with the same `failure_signature` twice in a row, propose @arbiter.
-- @arbiter is invoked via task permission only; it must be `ask`-gated for non-orchestrator agents.
-
-## Failure signatures
-
-When @implementer reports BLOCKED, the report must include a `failure_signature` field in the form:
-`<category>/<symbol>/<root_cause_hypothesis>`
-
-The orchestrator uses this to detect repeated failures and trigger arbiter consultation.
-```
-
-- [ ] **Step 2: コミットする**
-
-```bash
-cd /Users/haru256/Documents/projects/dotfiles
-git add .config/opencode/AGENTS.md
-git commit -m "feat(opencode): 共通ルールを AGENTS.md に集約"
-```
-
----
-
-### Task 9: AGENTS.md を ~/.config/opencode/ にシンボリックリンクで反映する
-
-dotfiles で管理した AGENTS.md を `~/.config/opencode/AGENTS.md` に symlink する。
+実装詳細（failure_signature のフォーマット、living-plan のセクション名）は agent prompt に書いているため、ここには書かない。
 
 **Files:**
-- Create symlink: `~/.config/opencode/AGENTS.md` → `dotfiles/.config/opencode/AGENTS.md`
+- Modify: `dotfiles/.agents/AGENTS.md`
 
-- [ ] **Step 1: シンボリックリンクを作成する**
-
-```bash
-ln -s /Users/haru256/Documents/projects/dotfiles/.config/opencode/AGENTS.md \
-      ~/.config/opencode/AGENTS.md
-```
-
-- [ ] **Step 2: リンクを確認する**
+- [ ] **Step 1: 現在のシンボリックリンクを確認する**
 
 ```bash
 ls -la ~/.config/opencode/AGENTS.md
 ```
 
-期待値: `AGENTS.md -> /Users/haru256/Documents/projects/dotfiles/.config/opencode/AGENTS.md`
+期待値: `AGENTS.md -> /Users/haru256/Documents/projects/dotfiles/.agents/AGENTS.md`
 
-- [ ] **Step 3: README にこのシンボリックリンクのセットアップ手順を追記する**
-
-`README.md` の `### OpenCode` セクションの `ln -s` 群に1行追加：
-
-```sh
-ln -s ~/dotfiles/.config/opencode/AGENTS.md     ~/.config/opencode/AGENTS.md
-```
-
-- [ ] **Step 4: README をコミットする**
+- [ ] **Step 2: 現在の "OpenCode Balanced Workflow" セクションを確認する**
 
 ```bash
-cd /Users/haru256/Documents/projects/dotfiles
-git add README.md
-git commit -m "docs: README に AGENTS.md のシンボリックリンク手順を追記"
+grep -n "OpenCode Balanced Workflow" /Users/haru256/Documents/projects/dotfiles/.agents/AGENTS.md
 ```
 
----
+- [ ] **Step 3: "OpenCode Balanced Workflow" セクションを以下の内容で置き換える**
 
-### Task 10: living-plan template を作成する
-
-**改善点 #4 を反映。** plan を living document 化するための template を作成する。
-
-**Files:**
-- Create: `dotfiles/docs/superpowers/templates/living-plan-template.md`
-
-注意: dotfiles リポジトリ自体に template を置く。プロジェクトリポジトリ側で使う場合は、プロジェクトに `docs/superpowers/templates/` をコピーするか、このグローバルテンプレートを参照する。
-
-- [ ] **Step 1: ディレクトリを作成する**
-
-```bash
-mkdir -p /Users/haru256/Documents/projects/dotfiles/docs/superpowers/templates
-```
-
-- [ ] **Step 2: template ファイルを作成する**
-
-ファイル: `dotfiles/docs/superpowers/templates/living-plan-template.md`
+現在のセクション（4行）を以下の拡充版に置き換える：
 
 ```md
-# <Feature Name> Implementation Plan
+## OpenCode Balanced Workflow
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task.
+OpenCode の通常入口は `orchestrator` を使う。
 
-**Goal:** <one sentence>
+**ルーティング方針:**
+- typo・1行修正・README 小修正 → `@implementer` 直行
+- どこを触るか不明 → `@explorer` で調査してから判断
+- 中規模以上の機能 → `@orchestrator` 経由で探索・計画・実装・レビューを調整
+- plan / ADR / README / docs の作成 → `@orchestrator`（writing-plans スキルを活用）
+- 意味のある成果物のレビュー → `@reviewer`（`/review-plan`, `/review-impl`, `/review-adr`, `/review-docs` を使って ARTIFACT_TYPE を指定）
+- `@implementer` が同じ失敗を2回繰り返した → `@arbiter` に相談
 
-**Architecture:** <2-3 sentences>
+**Plan as source of truth:**
+- plan ファイルが存在する場合、plan ファイルを実装・レビューの基準にする。
+- chat 履歴だけに依存しない。
+- plan には実装ログ・レビュー所見・逸脱記録・未解決事項のセクションを設けて状態を引き継ぐ。
 
-**Tech Stack:** <key technologies>
+**`@arbiter` の使用条件:**
+- `@implementer` が同種の失敗を2回繰り返した
+- `@reviewer` が ESCALATE を返した
+- 設計判断が割れた
+- API 境界・state schema・IAM・データモデル・セキュリティに影響する変更
 
----
-
-## Tasks
-
-### Task 1: <Component>
-
-**Files:**
-- Create: ...
-- Modify: ...
-
-- [ ] **Step 1: ...**
-- [ ] **Step 2: ...**
-
-(... more tasks ...)
-
----
-
-## Implementation Log
-
-Implementer appends one line per attempt: `- [YYYY-MM-DD] <agent> attempt #<n> → <STATUS> | <commit-or-failure-signature>`
-
-Example:
-- [2026-05-09] implementer attempt #1 → BLOCKED | test_failure/auth.test_token_refresh/jwt_clock_skew
-- [2026-05-09] implementer attempt #2 → DONE | abc1234
-
-## Review Findings
-
-Reviewer appends one line per review: `- [YYYY-MM-DD] <reviewer-id> <ARTIFACT_TYPE> → <VERDICT> | <key-issue-or-summary>`
-
-Example:
-- [2026-05-09] reviewer plan → APPROVE | scope ok, sequence sensible
-- [2026-05-09] reviewer implementation → REQUEST_CHANGES | hidden coupling in module Y
-
-## Deviations from Plan
-
-Implementer documents intentional deviations:
-- <file or step> deviated from plan because <reason>. Impact: <impact>.
-
-## Open Questions
-
-Any agent adds questions that need orchestrator or arbiter attention:
-- <question>
+**`@arbiter` は常用しない。** 同じ問題で2回相談しても解決しない場合は、人間にエスカレートする。
 ```
 
-- [ ] **Step 3: コミットする**
+- [ ] **Step 4: コミットする**
 
 ```bash
 cd /Users/haru256/Documents/projects/dotfiles
-git add docs/superpowers/templates/living-plan-template.md
-git commit -m "docs: living-plan template を追加"
+git add .agents/AGENTS.md
+git commit -m "feat(agents): OpenCode Balanced Workflow セクションを拡充"
 ```
 
 ---
 
-### Task 11: 既存の plan / ADR commands の重複を整理し、verification を行う
+### Task 9: 全体検証を行う
 
 設計全体の整合性を最終確認する。
 
-- [ ] **Step 1: opencode.json の JSON validity を最終確認する**
+- [ ] **Step 1: opencode.json の変更箇所を確認する**
 
 ```bash
-cat /Users/haru256/Documents/projects/dotfiles/.config/opencode/opencode.json | \
-  sed 's|//.*||' | python3 -c "import sys, json; json.loads(sys.stdin.read())" && echo "VALID"
+grep -A6 '"edit"' /Users/haru256/Documents/projects/dotfiles/.config/opencode/opencode.json | head -15
+grep -A4 '"task"' /Users/haru256/Documents/projects/dotfiles/.config/opencode/opencode.json | grep -A3 '"arbiter"'
 ```
 
-期待値: `VALID`
+期待値:
+- orchestrator の edit が `{ "*": "deny", "docs/**": "allow", ... }` になっている
+- reviewer の task に `"arbiter": "ask"` が含まれている
 
-- [ ] **Step 2: 全ファイルの存在確認**
+- [ ] **Step 2: prompts と commands のファイル存在確認**
 
 ```bash
 ls /Users/haru256/Documents/projects/dotfiles/.config/opencode/prompts/
 ls /Users/haru256/Documents/projects/dotfiles/.config/opencode/commands/
-ls /Users/haru256/Documents/projects/dotfiles/.config/opencode/AGENTS.md
-ls /Users/haru256/Documents/projects/dotfiles/docs/superpowers/templates/living-plan-template.md
 ```
 
 期待値:
 - prompts/: orchestrator.md, implementer.md, explorer.md, reviewer.md, arbiter.md（5ファイル）
 - commands/: feature.md, quick-fix.md, review-plan.md, review-impl.md, review-adr.md, review-docs.md, explore.md, plan.md, adr.md（9ファイル）
-- AGENTS.md, living-plan-template.md が存在
 
-- [ ] **Step 3: orchestrator が doc-planner に依存していないことを確認する**
+- [ ] **Step 3: AGENTS.md のシンボリックリンクと内容を確認する**
+
+```bash
+ls -la ~/.config/opencode/AGENTS.md
+grep -A5 "OpenCode Balanced Workflow" /Users/haru256/Documents/projects/dotfiles/.agents/AGENTS.md | head -10
+```
+
+期待値:
+- `~/.config/opencode/AGENTS.md` → `dotfiles/.agents/AGENTS.md` のシンボリックリンク
+- "ルーティング方針" の文字が含まれている（拡充されている）
+
+- [ ] **Step 4: doc-planner への依存がないことを確認する**
 
 ```bash
 grep -rn "doc-planner" /Users/haru256/Documents/projects/dotfiles/.config/opencode/
@@ -996,31 +889,21 @@ grep -rn "doc-planner" /Users/haru256/Documents/projects/dotfiles/.config/openco
 
 期待値: 出力なし
 
-- [ ] **Step 4: opencode を一度起動して config error がないか確認する**
-
-```bash
-cd /tmp && opencode --help 2>&1 | head -20
-```
-
-期待値: 通常のヘルプ出力（config parse error が出ないこと）
-
-- [ ] **Step 5: 動作確認用に小さな探索タスクで /explore コマンドを試す（手動）**
-
-ユーザーに以下を依頼：
-- OpenCode を起動
-- `/explore` コマンドを使って軽い探索タスクを依頼（例: "What does scripts/git-aicommit do?"）
-- explorer が Summary Report + Exploration Log の構造で返答することを確認
-
-これは subagent では検証できないため、人間の手動確認に委ねる。
-
-- [ ] **Step 6: 全コミットの確認**
+- [ ] **Step 5: 全コミットの確認**
 
 ```bash
 cd /Users/haru256/Documents/projects/dotfiles
 git log --oneline main..HEAD
 ```
 
-期待値: 各タスクごとに1コミット（合計9〜10コミット）
+期待値: 各タスクごとに1コミット（合計8コミット前後）
+
+- [ ] **Step 6: 動作確認（手動）**
+
+ユーザーに以下を依頼：
+- OpenCode を起動し `/explore` で軽い調査を依頼（例: "What does scripts/git-aicommit do?"）
+- explorer が Summary Report + Exploration Log の構造で返答することを確認
+- これは subagent では検証できないため人間の手動確認に委ねる
 
 ---
 
@@ -1028,14 +911,14 @@ git log --oneline main..HEAD
 
 | 改善点                                       | Tasks   |
 | ----------------------------------------- | ------- |
-| #1 orchestrator に docs 権限付与（doc-planner は未追加のまま） | 1, 2, 7 |
+| #1 orchestrator に docs 権限付与             | 1, 2, 7 |
 | #2 reviewer ARTIFACT_TYPE 分岐              | 4, 7    |
 | #3 critical thinking elicitation          | 4       |
-| #4 plan を living document 化               | 2, 8, 10 |
-| #5 failure_signature による自動エスカレーション      | 2, 3, 6, 8 |
+| #4 plan を living document 化（prompt 埋め込み方式） | 2, 7    |
+| #5 failure_signature による自動エスカレーション      | 2, 3, 6 |
 | #6 implementer の停止条件                      | 3       |
 | #7 explorer 探索深度と report 長分離              | 5, 7    |
-| #9 AGENTS.md による共通ルール集約                  | 8, 9    |
+| #9 共有 AGENTS.md の OpenCode ルール拡充        | 8       |
 | #10 reviewer から arbiter を呼べる             | 1, 6    |
 | minor: /explore コマンド                      | 7       |
 | minor: explorer/reviewer は subagent（変更不要・確認済み） | -       |
@@ -1047,6 +930,7 @@ git log --oneline main..HEAD
 ## 注意事項
 
 - すべての変更は dotfiles リポジトリ側で行う。`~/.config/opencode/` 配下はシンボリックリンクなので、編集時は dotfiles のパスを使う。
-- AGENTS.md だけは新規ファイルのため、symlink を新たに作成する（Task 9）。
+- `~/.config/opencode/AGENTS.md` はすでに `dotfiles/.agents/AGENTS.md` へのシンボリックリンクが存在する。新規作成不要。
+- living-plan のセクション構造はテンプレートファイルではなく orchestrator prompt と `/plan` コマンドに埋め込む。
 - prompt 全面書き換えのため、変更前の内容は `git log` から復元できる前提で進める。
-- Task 11 Step 5 の動作確認は人間の手動確認に依存する。
+- Task 9 Step 6 の動作確認は人間の手動確認に依存する。
