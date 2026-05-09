@@ -58,3 +58,17 @@ ln -s ~/dotfiles/.config/starship.toml ~/.config/starship.toml
 ln -s ~/dotfiles/.config/nvim/init.lua ~/.config/nvim/init.lua
 ln -s ~/dotfiles/vscode/keybindings.json ~/.config/Code/User/keybindings.json
 ```
+
+### OpenCode
+
+```sh
+ln -s ~/dotfiles/.config/opencode/opencode.json ~/.config/opencode/opencode.json
+ln -s ~/dotfiles/.config/opencode/tui.json      ~/.config/opencode/tui.json
+ln -s ~/dotfiles/.config/opencode/package.json  ~/.config/opencode/package.json
+ln -s ~/dotfiles/.config/opencode/bun.lock      ~/.config/opencode/bun.lock
+ln -s ~/dotfiles/.config/opencode/prompts       ~/.config/opencode/prompts
+ln -s ~/dotfiles/.config/opencode/commands      ~/.config/opencode/commands
+
+# プラグインのインストール（bun が mise で管理されている前提）
+cd ~/.config/opencode && bun install
+```
