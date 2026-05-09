@@ -4,7 +4,7 @@
   // エージェント別のツール制御
   "agent": {
     "orchestrator": {
-      "description": "Primary orchestration agent. Plans, delegates, reviews compact reports, and uses Superpowers when appropriate. It does not edit files.",
+      "description": "Primary orchestration agent. Plans, delegates, writes plans/ADRs/README/docs, and uses Superpowers when appropriate. Does not edit source code.",
       "mode": "primary",
       "model": "openai/gpt-5.5",
       "reasoningEffort": "medium",
@@ -12,7 +12,13 @@
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/orchestrator.md}",
       "permission": {
-        "edit": "deny",
+        "edit": {
+          "*": "deny",
+          "docs/**": "allow",
+          "README.md": "allow",
+          "ADRs/**": "allow",
+          "adr/**": "allow"
+        },
         "read": "allow",
         "bash": {
           "*": "allow",
@@ -120,7 +126,10 @@
         "todowrite": "allow",
         "grep": "allow",
         "lsp": "allow",
-        "task": "deny",
+        "task": {
+          "*": "deny",
+          "arbiter": "ask"
+        },
         "glob": "allow",
         "list": "allow"
       }
