@@ -72,38 +72,50 @@
 
 ## OpenCode Balanced Workflow
 
-OpenCode の通常入口は `orchestrator` を使う。
+OpenCode の通常入口は試験運用中の `dispatcher_v2` を使う。`dispatcher_v2` はルーティング専用 agent で、判断を伴う依頼は `planner_v2` に委譲する。
 
-**ルーティング方針:**
-- typo・1行修正・README 小修正 → `@implementer` 直行
-- どこを触るか不明 → `@explorer` で調査してから判断
-- 中規模以上の機能 → `@orchestrator` 経由で探索・計画・実装・レビューを調整
-- plan / ADR / README / docs の作成 → `@orchestrator`（writing-plans スキルを活用）
-- 意味のある成果物のレビュー → `@reviewer`（`/review-plan`, `/review-impl`, `/review-adr`, `/review-docs` を使って ARTIFACT_TYPE を指定）
-- `@implementer` が同じ失敗を2回繰り返した → `@arbiter` に相談
+既存の v1 agent 群（`orchestrator`, `implementer`, `explorer`, `reviewer`, `arbiter`）と既存 command は fallback として残す。`dispatcher_v2` の性能が悪い場合は `opencode.json` の `default_agent` を `orchestrator` に戻して従来運用へ戻す。
+
+**v2 ルーティング方針（dispatcher_v2 が判断）:**
+- typo・1行修正・README 小修正 → `@implementer_v2` 直行
+- 探索のみが目的 → `@explorer_v2`
+- 中規模以上の機能、plan / ADR / README / docs 作成、設計判断、API・schema・security・IAM・データモデル関連、曖昧なスコープ → `@planner_v2`
+- 失敗ループ検出時は `@planner_v2` にエスカレーション
+- 迷ったら `@planner_v2`
+
+**v2 コマンド経路:**
+- `/quick-fix-v2` → `@implementer_v2` 直行
+- `/feature-v2` / `/plan-v2` / `/adr-v2` → `@planner_v2` 直行
+- `/explore-v2` → `@explorer_v2` 直行
+- `/review-plan-v2` / `/review-impl-v2` / `/review-adr-v2` / `/review-docs-v2` → `@reviewer_v2` 直接呼び出し（inline findings のみ、plan 自動転記なし）
+
+**v1 fallback:**
+- `default_agent` を `orchestrator` に戻すと従来運用に戻る
+- 既存 `/feature` / `/plan` / `/adr` / `/quick-fix` / `/explore` / `/review-*` は v1 のまま残す
 
 **Reviewer findings の取り扱い:**
-- `@reviewer` は構造化 findings を inline で返すのみ。plan には書き込まない（**単一書き込み主体: orchestrator のみ**）。
-- `@orchestrator` は workflow 内で `@reviewer` を呼んだ場合、受け取った findings を verbatim で plan の `Review Findings > Reviewer Raw Findings` に転記する。
-- 続けて `@orchestrator` は raw findings を `ACCEPT / REJECT / DEFER / NEEDS_CONTEXT / ESCALATE` に分類し、採否を `Review Findings > Orchestrator Adjudication` に表形式（| ID | Severity | Decision | Reason | Action |）で記録する。
+- v2 では `@reviewer_v2` は構造化 findings を inline で返すのみ。plan には書き込まない（**単一書き込み主体: planner_v2 のみ**）。
+- `@planner_v2` は workflow 内で `@reviewer_v2` を呼んだ場合、受け取った findings を verbatim で plan の `Review Findings > Reviewer Raw Findings` に転記する。
+- 続けて `@planner_v2` は raw findings を `ACCEPT / REJECT / DEFER / NEEDS_CONTEXT / ESCALATE` に分類し、採否を `Review Findings > Planner V2 Adjudication` に表形式（| ID | Severity | Decision | Reason | Action |）で記録する。
+- v1 fallback では従来通り `@orchestrator` と `Review Findings > Orchestrator Adjudication` を使う。
 - raw findings はレビュー入力（監査履歴）であり、そのまま実装指示として扱わない。
 - DEFER は plan の Open Questions セクションにも転記して追跡する。
-- `@implementer` には ACCEPT 分のみを渡す。
-- ESCALATE は `@arbiter` 呼び出し前に必ずユーザーに確認する。
-- `/review-*` 直接呼び出しは reviewer が inline で findings を返すだけ。plan 自動保存は行わない（user が必要なら手で転記する）。
+- `@implementer_v2` には ACCEPT 分のみを渡す。
+- ESCALATE は `@arbiter_v2` 呼び出し前に必ずユーザーに確認する。
+- `/review-*-v2` 直接呼び出しは reviewer_v2 が inline で findings を返すだけ。plan 自動保存は行わない（user が必要なら手で転記する）。
 
 **Plan as source of truth:**
 - plan ファイルが存在する場合、plan ファイルを実装・レビューの基準にする。
 - chat 履歴だけに依存しない。
 - plan には実装ログ・レビュー所見・逸脱記録・未解決事項のセクションを設けて状態を引き継ぐ。
 
-**`@arbiter` の使用条件:**
-- `@implementer` が同種の失敗を2回繰り返した
-- `@reviewer` が ESCALATE を返した
+**`@arbiter_v2` の使用条件:**
+- `@implementer_v2` が同種の失敗を2回繰り返した
+- `@reviewer_v2` が ESCALATE を返した
 - 設計判断が割れた
 - API 境界・state schema・IAM・データモデル・セキュリティに影響する変更
 
-**`@arbiter` は常用しない。** 同じ問題で2回相談しても解決しない場合は、人間にエスカレートする。
+**`@arbiter_v2` は常用しない。** 同じ問題で2回相談しても解決しない場合は、人間にエスカレートする。
 
 ---
 
