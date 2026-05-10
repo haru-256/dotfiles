@@ -1,8 +1,42 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "default_agent": "orchestrator",
+  "default_agent": "dispatcher_v2",
   // エージェント別のツール制御
   "agent": {
+    "dispatcher_v2": {
+      "description": "V2 routing-only front door. Delegates user requests to v2 implementer, explorer, or planner. Does not implement, plan, write docs, review, or adjudicate.",
+      "mode": "primary",
+      "model": "opencode-go/deepseek-v4-pro",
+      "textVerbosity": "low",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/opencode/prompts/dispatcher_v2.md}",
+      "permission": {
+        "edit": "deny",
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "allow",
+        "todowrite": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": {
+          "*": "deny",
+          "implementer_v2": "allow",
+          "explorer_v2": "allow",
+          "planner_v2": "allow"
+        },
+        "glob": "allow",
+        "list": "allow"
+      }
+    },
     "orchestrator": {
       "description": "Primary orchestration agent. Plans, delegates, writes plans/ADRs/README/docs, and uses Superpowers when appropriate. Does not edit source code.",
       "mode": "primary",
@@ -45,6 +79,48 @@
         "list": "allow"
       }
     },
+    "planner_v2": {
+      "description": "V2 GPT-5.5 planning subagent. Writes plans/ADRs/README/docs, adjudicates reviewer_v2 findings, and resolves design judgment. Does not edit source code.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.5",
+      "reasoningEffort": "medium",
+      "textVerbosity": "low",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/opencode/prompts/planner_v2.md}",
+      "permission": {
+        "edit": {
+          "*": "deny",
+          "docs/**": "allow",
+          "README.md": "allow",
+          "ADRs/**": "allow",
+          "adr/**": "allow"
+        },
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "allow",
+        "todowrite": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": {
+          "*": "deny",
+          "implementer_v2": "allow",
+          "explorer_v2": "allow",
+          "reviewer_v2": "allow",
+          "arbiter_v2": "ask"
+        },
+        "glob": "allow",
+        "list": "allow"
+      }
+    },
     "implementer": {
       "description": "Implementation subagent. Makes scoped code changes, runs checks, fixes failures, and reports compact results.",
       "mode": "subagent",
@@ -73,12 +149,68 @@
         "list": "allow"
       }
     },
+    "implementer_v2": {
+      "description": "V2 implementation subagent. Makes scoped code changes, runs checks, fixes failures, and reports compact results.",
+      "mode": "subagent",
+      "model": "opencode-go/kimi-k2.6",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/opencode/prompts/implementer_v2.md}",
+      "permission": {
+        "edit": "allow",
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "allow",
+        "todowrite": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": "deny",
+        "glob": "allow",
+        "list": "allow"
+      }
+    },
     "explorer": {
       "description": "Read-only deep repository exploration subagent. Finds relevant files, dependencies, data/control flow, and likely impact radius. Returns compact reports.",
       "mode": "subagent",
       "model": "opencode-go/deepseek-v4-pro",
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/explorer.md}",
+      "permission": {
+        "edit": "deny",
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "allow",
+        "todowrite": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": "deny",
+        "glob": "allow",
+        "list": "allow"
+      }
+    },
+    "explorer_v2": {
+      "description": "V2 read-only deep repository exploration subagent. Finds relevant files, dependencies, data/control flow, and likely impact radius. Returns compact reports.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/opencode/prompts/explorer_v2.md}",
       "permission": {
         "edit": "deny",
         "read": "allow",
@@ -133,6 +265,38 @@
         "list": "allow"
       }
     },
+    "reviewer_v2": {
+      "description": "V2 read-only diff review subagent. Checks correctness, spec compliance, security, tests, maintainability, and over-engineering.",
+      "mode": "subagent",
+      "model": "opencode-go/deepseek-v4-pro",
+      "reasoningEffort": "max",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/opencode/prompts/reviewer_v2.md}",
+      "permission": {
+        "edit": "deny",
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "allow",
+        "todowrite": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": {
+          "*": "deny",
+          "arbiter_v2": "ask"
+        },
+        "glob": "allow",
+        "list": "allow"
+      }
+    },
     "arbiter": {
       "description": "Hidden last-resort consultation subagent. Diagnoses blocked tasks, redesigns approach, and returns a compact decision. It never edits files.",
       "mode": "subagent",
@@ -141,6 +305,36 @@
       "textVerbosity": "low",
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/arbiter.md}",
+      "permission": {
+        "edit": "deny",
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "allow",
+        "todowrite": "allow",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": "deny",
+        "glob": "allow",
+        "list": "allow"
+      }
+    },
+    "arbiter_v2": {
+      "description": "V2 hidden last-resort consultation subagent. Diagnoses blocked tasks, redesigns approach, and returns a compact decision. It never edits files.",
+      "mode": "subagent",
+      "model": "openai/gpt-5.5",
+      "reasoningEffort": "xhigh",
+      "textVerbosity": "low",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/opencode/prompts/arbiter_v2.md}",
       "permission": {
         "edit": "deny",
         "read": "allow",
