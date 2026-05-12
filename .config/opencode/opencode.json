@@ -13,28 +13,24 @@
       "permission": {
         "edit": "deny",
         "read": "allow",
-        "bash": {
-          "*": "allow",
-          "rm -rf *": "deny",
-          "sudo *": "ask"
-        },
-        "external_directory": "allow",
+        "bash": "deny",
+        "external_directory": "deny",
         "webfetch": "deny",
         "websearch": "deny",
         "question": "allow",
-        "codesearch": "allow",
+        "codesearch": "deny",
         "skill": "allow",
         "todowrite": "allow",
-        "grep": "allow",
-        "lsp": "allow",
+        "grep": "deny",
+        "lsp": "deny",
         "task": {
           "*": "deny",
           "implementer_v2": "allow",
           "explorer_v2": "allow",
           "planner_v2": "allow"
         },
-        "glob": "allow",
-        "list": "allow"
+        "glob": "deny",
+        "list": "deny"
       }
     },
     "orchestrator": {
