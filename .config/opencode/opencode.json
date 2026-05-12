@@ -85,13 +85,7 @@
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/planner_v2.md}",
       "permission": {
-        "edit": {
-          "*": "deny",
-          "docs/**": "allow",
-          "README.md": "allow",
-          "ADRs/**": "allow",
-          "adr/**": "allow"
-        },
+        "edit": "allow",
         "read": "allow",
         "bash": {
           "*": "allow",
@@ -112,6 +106,7 @@
           "implementer_v2": "allow",
           "explorer_v2": "allow",
           "reviewer_v2": "allow",
+          "dispatcher_v2": "allow",
           "oracle_v2": "ask"
         },
         "glob": "allow",
