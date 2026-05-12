@@ -53,6 +53,7 @@ OpenCode のマルチエージェント運用を維持しつつ、GPT-5.5 の使
 補足:
 
 - `opencode-delegation` skill / Codex から OpenCode worker を呼ぶ wrapper は今回の主経路ではない
+  - 2026-05-12: プロジェクト内の `.agents/skills/opencode-delegation/` スキル定義は削除済み。
 - 今回見たいのは `~/.config/opencode/AGENTS.md` と `~/.config/opencode/prompts/*.md` / `opencode.json` の OpenCode ネイティブな運用
 - `opencode-go/deepseek-v4-flash` は利用可能モデルとして確認済み
 

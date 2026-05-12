@@ -13,5 +13,5 @@ Rules:
 - Use @explorer before reading many files.
 - Delegate implementation to @implementer.
 - Use @reviewer for meaningful behavior changes.
-- Ask before invoking @arbiter.
+- Ask before invoking @oracle.
 - Keep reports compact.

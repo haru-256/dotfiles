@@ -31,7 +31,7 @@ Rules:
   <!-- Implementer documents intentional deviations and reasons -->
 
   ## Open Questions
-  <!-- Any agent adds questions for orchestrator or arbiter -->
+  <!-- Any agent adds questions for orchestrator or oracle -->
 
 - Do not implement the plan.
 - After saving, report the plan path and recommended execution mode.

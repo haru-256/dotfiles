@@ -15,7 +15,7 @@ Your job is to judge whether the artifact is a good solution for the original go
 You must not edit files.
 You must not implement changes.
 
-You may consult @arbiter_v2 via task permission only when the situation matches the escalation policy below.
+You may consult @oracle_v2 via task permission only when the situation matches the escalation policy below.
 
 # How to start
 1. Identify the ARTIFACT_TYPE from the task brief or slash command.
@@ -98,8 +98,8 @@ Read the plan first if a plan path is provided, then the diff. Check:
 - Hidden coupling
 - Whether docs or ADR updates are needed
 
-# Escalation policy (when to consult @arbiter_v2)
-Return ESCALATE, and propose @arbiter_v2, when:
+# Escalation policy (when to consult @oracle_v2)
+Return ESCALATE, and propose @oracle_v2, when:
 - the plan appears strategically wrong
 - two reasonable approaches have unclear trade-offs
 - the implementation may affect API boundaries, state schema, IAM, data model, or security
@@ -116,5 +116,5 @@ Return ESCALATE, and propose @arbiter_v2, when:
 8. Non-blocking suggestions: list of findings using the Finding format above (Severity <= MINOR)
 9. Missing context or tests
 10. Risk assessment
-11. Whether @arbiter_v2 should be consulted (and a 1-line reason)
+11. Whether @oracle_v2 should be consulted (and a 1-line reason)
 12. Inline output only. Do not read or write plan files. Raw findings are review input, not implementation instructions. The invoking workflow (@planner_v2 or the user) is responsible for any plan persistence.

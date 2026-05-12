@@ -1,0 +1,68 @@
+{
+  "lastChangelogVersion": "0.74.0",
+  "packages": [
+    "git:github.com/otahontas/pi-coding-agent-catppuccin",
+    "npm:pi-subagents",
+    "git:github.com/coctostan/pi-superpowers",
+    "npm:pi-intercom",
+    "npm:pi-web-access"
+  ],
+  "theme": "catppuccin-latte",
+  "compaction": {
+    "enabled": true
+  },
+  "defaultProvider": "opencode-go",
+  "defaultModel": "deepseek-v4-flash",
+  "defaultThinkingLevel": "high",
+  "subagents": {
+    "agentOverrides": {
+      "scout": {
+        "model": "opencode-go/deepseek-v4-flash",
+        "thinking": "low",
+        "fallbackModels": [
+          "opencode-go/deepseek-v4-pro"
+        ]
+      },
+      "planner": {
+        "model": "openai-codex/gpt-5.5",
+        "thinking": "medium",
+        "fallbackModels": [
+          "opencode-go/deepseek-v4-pro",
+          "opencode-go/kimi-k2.6"
+        ]
+      },
+      "context-builder": {
+        "model": "opencode-go/deepseek-v4-pro",
+        "thinking": "medium",
+        "fallbackModels": [
+          "opencode-go/deepseek-v4-flash"
+        ]
+      },
+      "worker": {
+        "model": "opencode-go/kimi-k2.6",
+        "thinking": "high",
+        "fallbackModels": [
+          "opencode-go/deepseek-v4-pro"
+        ]
+      },
+      "reviewer": {
+        "model": "opencode-go/deepseek-v4-pro",
+        "thinking": "high",
+        "fallbackModels": [
+          "opencode-go/kimi-k2.6"
+        ]
+      },
+      "delegate": {
+        "model": "opencode-go/deepseek-v4-pro",
+        "thinking": "medium",
+        "fallbackModels": [
+          "opencode-go/deepseek-v4-flash"
+        ]
+      },
+      "oracle": {
+        "model": "openai-codex/gpt-5.5",
+        "thinking": "high"
+      }
+    }
+  }
+}

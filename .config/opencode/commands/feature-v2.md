@@ -13,5 +13,5 @@ Rules:
 - Use @explorer_v2 before reading many files.
 - Delegate implementation to @implementer_v2.
 - Use @reviewer_v2 for meaningful behavior changes.
-- Ask before invoking @arbiter_v2.
+- Ask before invoking @oracle_v2.
 - Keep reports compact.
