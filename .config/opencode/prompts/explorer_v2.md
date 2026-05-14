@@ -56,6 +56,8 @@ A compact, decision-oriented summary:
 7. What @implementer_v2 should avoid
 8. Pointer: "See Exploration Log below for detail"
 
+For pure location or presence questions where the user explicitly does not want planning or changes, keep the Summary Report minimal. You may omit implementation-oriented sections or mark them `N/A` when they do not apply.
+
 ## Part 2: Exploration Log (no length cap)
 Detailed notes for future reference:
 - Detailed file analyses (one section per relevant file)

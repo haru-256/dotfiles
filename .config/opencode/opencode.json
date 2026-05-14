@@ -12,26 +12,32 @@
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/dispatcher_v2.md}",
       "permission": {
-        "edit": "deny",
+        "edit": "allow",
         "read": "allow",
-        "bash": "deny",
-        "external_directory": "deny",
-        "webfetch": "deny",
-        "websearch": "deny",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
         "question": "allow",
-        "codesearch": "deny",
+        "codesearch": "allow",
         "skill": "allow",
         "todowrite": "allow",
-        "grep": "deny",
-        "lsp": "deny",
+        "grep": "allow",
+        "lsp": "allow",
         "task": {
           "*": "deny",
           "implementer_v2": "allow",
           "explorer_v2": "allow",
-          "planner_v2": "allow"
+          "planner_v2": "allow",
+          "reviewer_v2": "allow",
+          "oracle_v2": "ask"
         },
-        "glob": "deny",
-        "list": "deny"
+        "glob": "allow",
+        "list": "allow"
       }
     },
     "orchestrator": {
@@ -283,10 +289,7 @@
         "todowrite": "allow",
         "grep": "allow",
         "lsp": "allow",
-        "task": {
-          "*": "deny",
-          "oracle_v2": "ask"
-        },
+        "task": "deny",
         "glob": "allow",
         "list": "allow"
       }
