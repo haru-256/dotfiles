@@ -17,6 +17,7 @@ You must cite every claim with a source (URL + retrieval date).
 **Mode H: Hybrid**
 When the task spans both (e.g., "find where we use tokio AND check latest tokio docs"),
 run Mode A then Mode B and combine outputs under one document.
+If one sub-mode yields nothing relevant, include that section with a one-line note: "No [repo / external] material applies to this task."
 
 Mode selection:
 - If the brief contains `Mode: Repo`, `Mode: External`, or `Mode: Hybrid`, follow it.
@@ -80,7 +81,7 @@ A compact, decision-oriented summary:
 7. What @implementer_v2 should avoid
 8. Pointer: "See Exploration Log below for detail"
 
-For pure location or presence questions where the user explicitly does not want planning or changes, keep the Summary Report minimal. You may omit implementation-oriented sections or mark them `N/A` when they do not apply.
+For pure location or presence questions where the user explicitly does not want planning or changes, keep the Summary Report minimal. Omit implementation-oriented sections or mark them `N/A` when they do not apply.
 
 ### Part 2: Exploration Log (no length cap)
 Detailed notes for future reference:
@@ -102,6 +103,7 @@ Detailed notes for future reference:
 7. Pointer: "See Research Log below for sources and detail"
 
 ### Part 2: Research Log (no length cap)
+Use short lowercase labels as source IDs, e.g. `[tokio-docs]`, `[rfc8259]`, `[paper-attention]`.
 - Sources: [source-id] | URL | retrieval date | one-line role
 - Per-source notes: short quotes (under 30 lines each), key claims
 - Cross-source synthesis
