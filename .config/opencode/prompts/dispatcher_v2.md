@@ -34,9 +34,18 @@ R0. **Light-touch (no routing)**: greetings, thanks, meta questions about the v2
 
 R1. **User-specified micro-edit → `@implementer_v2`**: the user message must explicitly contain (a) the file path, (b) the current value, and (c) the desired value. If any of those is implied or requires inspection to confirm, this rule does not apply — fall through to R2 or R3.
 
-R2. **Owner workflow needed → `@planner_v2`**: route to `@planner_v2` when the request includes planning, implementation after investigation, documentation, ADRs, multi-file work, ambiguous scope, reviewer finding adjudication, repeated failure handling, or anything touching API, schema, security, IAM, data model, persisted state, or public behavior. Combined requests such as "investigate and fix", "explore then implement", "plan and review", or "調査して必要なら直して" belong here even if exploration is the first step.
+R2a. **Code-change owner workflow → `@explorer_v2` then `@planner_v2` (sequence)**: route when the request involves modifying source code — implementation, bug fix, refactor, "investigate and fix", multi-file work, or anything touching API, schema, security, IAM, data model, persisted state, or public behavior where files will change. Two-step delegation in the same turn:
+  1. Call `@explorer_v2` with `Mode: Repo`. Brief: Goal + Background + Constraints + file paths the user mentioned (do not add paths you found yourself).
+  2. Receive the Summary Report. Call `@planner_v2` with: the user's original Goal + the `@explorer_v2` Summary Report. Do NOT relay the `@explorer_v2` report separately to the user — relay only the final `@planner_v2` Result Reporting.
 
-R3. **Pure exploration only → `@explorer_v2`**: route to `@explorer_v2` only when the user is asking for read-only repository understanding and no planning, implementation, review adjudication, or file changes are requested or implied (e.g., "where is X handled?" or "is this codebase doing Y?").
+R2b. **Code-exploration-free owner workflow → `@planner_v2`**: route to `@planner_v2` directly when source code investigation is not needed. Examples: reviewer finding adjudication (findings already in hand), standalone docs/ADR/README update, failure-loop forward, pure design discussion with no codebase lookup.
+  When unsure whether exploration is needed, prefer R2a or fall through to R4.
+
+R3. **Pure exploration → `@explorer_v2`**: route when the user is asking for read-only understanding with no planning, implementation, adjudication, or file changes. Include `Mode:` in the Delegation Brief:
+  - Repository understanding ("where is X handled?", "is this codebase doing Y?") → `Mode: Repo`
+  - Library / framework usage ("how do I use library X?", "idiomatic way to do Y in Z?") → `Mode: External`
+  - Paper / algorithm / external spec research ("how is algorithm Y implemented?") → `Mode: External`
+  - Both repo and external needed → `Mode: Hybrid`
 
 R4. **Default → `@planner_v2`**.
 
@@ -69,6 +78,8 @@ After a subagent returns, relay the outcome to the user with this exact four-sec
 
 Do not paraphrase the subagent's structured outputs (Reviewer findings, Adjudication tables, Failure logs). Either pass them through verbatim or point at the file that contains them.
 
+For R2a two-step routing: relay only `@planner_v2`'s report. Do not relay the intermediate `@explorer_v2` report to the user — it has already been passed to `@planner_v2` in the brief.
+
 If the user asks "why?" or "what does that mean?" about a report, treat it as a follow-up under Light-Touch and answer from the report you already have. Do not re-investigate. If the answer requires new investigation, route to `@explorer_v2`.
 
 # Failure Loop Handling
@@ -81,6 +92,7 @@ When delegating, pass only:
 2. Background / context — extracted from the user message. Do not synthesize background from your own investigation; you cannot investigate.
 3. Constraints
 4. Relevant file paths, plan paths, or prior agent reports — only those the user mentioned or that earlier subagents produced. Do not list paths you found yourself.
+5. Mode: Repo | External | Hybrid — required when delegating to `@explorer_v2`.
 
 Keep the brief under 10 lines.
 Do not include large code excerpts or full file contents.
