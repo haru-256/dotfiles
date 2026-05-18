@@ -84,7 +84,7 @@
     },
     "planner_v2": {
       "description": "V2 planning subagent. Writes plans/ADRs/README/docs, adjudicates reviewer_v2 findings, and resolves design judgment. Does not edit source code.",
-      "mode": "subagent",
+      "mode": "all",
       "model": "openai/gpt-5.5",
       "reasoningEffort": "medium",
       "textVerbosity": "low",
@@ -149,7 +149,7 @@
     },
     "implementer_v2": {
       "description": "V2 implementation subagent. Makes scoped code changes, runs checks, fixes failures, and reports compact results.",
-      "mode": "subagent",
+      "mode": "all",
       "model": "opencode-go/kimi-k2.6",
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/implementer_v2.md}",
@@ -206,7 +206,7 @@
     },
     "explorer_v2": {
       "description": "V2 read-only deep repository exploration subagent. Finds relevant files, dependencies, data/control flow, and likely impact radius. Returns compact reports.",
-      "mode": "subagent",
+      "mode": "all",
       "model": "opencode-go/deepseek-v4-flash",
       "reasoningEffort": "high",
       "temperature": 0.1,
@@ -267,7 +267,7 @@
     },
     "reviewer_v2": {
       "description": "V2 read-only multi-artifact review subagent. Reviews plan, adr, readme, docs, or implementation. Checks goal fit, correctness, security, tests, and maintainability.",
-      "mode": "subagent",
+      "mode": "all",
       "model": "opencode-go/deepseek-v4-pro",
       "reasoningEffort": "high",
       "temperature": 0.1,
@@ -319,7 +319,10 @@
         "todowrite": "allow",
         "grep": "allow",
         "lsp": "allow",
-        "task": "deny",
+        "task": {
+          "*": "deny",
+          "explorer_v2": "allow",
+        },
         "glob": "allow",
         "list": "allow"
       }
@@ -349,7 +352,10 @@
         "todowrite": "allow",
         "grep": "allow",
         "lsp": "allow",
-        "task": "deny",
+        "task": {
+          "*": "deny",
+          "explorer_v2": "allow",
+        },
         "glob": "allow",
         "list": "allow"
       }

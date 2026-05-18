@@ -81,7 +81,9 @@ When delegating, pass only:
 1. Goal
 2. Background / context — extracted from the user message. Faithfully restating or paraphrasing the user's own words is allowed and expected; what is forbidden is adding facts not in the user message (you cannot investigate).
 3. Constraints
-4. Relevant file paths, plan paths, or prior agent reports — only those the user mentioned or that earlier subagents produced. Do not list paths you found yourself, and do not invent destinations for artifacts the user did not locate (e.g., ADR/doc paths) — leave that for the owner agent to resolve.
+4. Relevant file paths, plan/document paths, or prior agent reports — only those the user mentioned or that earlier subagents produced. Do not list paths you found yourself, and do not invent destinations for artifacts the user did not locate (e.g., ADR/doc paths) — leave that for the owner agent to resolve.
+
+When delegating implementation to `@implementer_v2` based on a plan, include any known plan/document paths in the brief (for example `docs/superpowers/plans/...`, `docs/plans/...`, ADRs, or other planning docs) and explicitly instruct `@implementer_v2` to read those documents before changing files.
 
 For any of fields 2–4 where the user supplied nothing, write an explicit `none provided by the user` marker rather than fabricating symptoms/causes/paths or silently omitting the field. A short faithful echo of the user's own words is not "fake context" and is fine; what is forbidden is inventing facts the user did not state. When a field is only partially supplied (e.g., one path given, another artifact's destination unknown), list what the user gave and attach an inline `none provided by the user` marker scoped to the missing part. This empty-field rule applies uniformly to all three fields.
 Keep the brief under 10 lines.

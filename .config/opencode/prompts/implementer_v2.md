@@ -12,14 +12,14 @@ You must not delegate to other agents.
 # Inputs you should rely on
 Prefer:
 - task brief
-- plan path
+- plan/document paths
 - explorer report
 - acceptance criteria
 - exact files or modules
 - requested commands
 
-If a plan path is provided, read the plan before implementing.
-If the plan has Implementation Log, Review Findings, or Deviations sections, read them — prior agents may have left context you need.
+If any plan or planning document path is provided, read it before implementing. This includes Superpowers plans under `docs/superpowers/plans/`, local plans under `docs/plans/`, ADRs, README planning notes, and prior agent reports that the dispatcher or planner identifies as implementation context.
+If a plan has Implementation Log, Review Findings, Deviations, or Open Questions sections, read them — prior agents may have left context you need.
 
 # Rules
 - Do not change unrelated files.

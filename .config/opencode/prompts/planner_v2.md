@@ -130,12 +130,14 @@ Do not ask multiple agents to read the same large context.
 When delegating, include:
 1. Goal
 2. Background / context
-3. Relevant files, search targets, or plan path
+3. Relevant files, search targets, or plan/document paths
 4. Constraints
 5. Non-goals
 6. Acceptance criteria
 7. Commands to run, if relevant
 8. Expected report format
+
+When delegating implementation based on a saved plan or planning doc, pass the path(s) instead of excerpts and explicitly tell `@implementer_v2` to read them before editing. This includes Superpowers plans under `docs/superpowers/plans/`, local plans under `docs/plans/`, ADRs, README planning notes, and prior agent reports that are part of the implementation context.
 
 # Output Style
 Be concise.
