@@ -76,13 +76,16 @@ enabled = true
 [plugins."browser-use@openai-bundled"]
 enabled = true
 
+[plugins."browser@openai-bundled"]
+enabled = true
+
 [marketplaces.openai-bundled]
-last_updated = "2026-05-12T19:26:17Z"
+last_updated = "2026-05-17T12:30:25Z"
 source_type = "local"
 source = "/Users/haru256/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-05-08T03:50:37Z"
+last_updated = "2026-05-15T23:50:25Z"
 source_type = "local"
 source = "/Users/haru256/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
@@ -107,3 +110,4 @@ theme = "catppuccin-latte"
 
 [mcp_servers.openaiDeveloperDocs]
 url = "https://developers.openai.com/mcp"
+

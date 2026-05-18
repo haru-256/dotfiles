@@ -63,7 +63,9 @@ ln -s ~/dotfiles/.config/starship.toml ~/.config/starship.toml
 mkdir -p ~/.config/glow/styles
 ln -s ~/dotfiles/.config/glow/glow.yml ~/.config/glow/glow.yml
 ln -s ~/dotfiles/.config/glow/styles/catppuccin-latte.json ~/.config/glow/styles/catppuccin-latte.json
+mkdir -p ~/.config/nvim
 ln -s ~/dotfiles/.config/nvim/init.lua ~/.config/nvim/init.lua
+ln -s ~/dotfiles/.config/nvim/lua ~/.config/nvim/lua
 ln -s ~/dotfiles/vscode/keybindings.json ~/.config/Code/User/keybindings.json
 ```
 
