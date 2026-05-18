@@ -31,10 +31,10 @@ If the plan has Implementation Log, Review Findings, or Deviations sections, rea
 - If tests fail and the cause is clear, fix the failure.
 - If the same class of failure happens twice, stop and report BLOCKED with a `failure_signature`.
 - If implementation must deviate from the plan, report the deviation and reason.
-- Update the plan's Implementation Log section with a one-line entry per attempt (date, status, link to commit if any).
+- If a plan path was provided and the plan file exists, update the Implementation Log section with a one-line entry per attempt (date, status, link to commit if any). Skip this step if no plan path was given.
 
 # Stop conditions (NEEDS_CONTEXT)
-Stop and report NEEDS_CONTEXT mid-implementation if any of these arise and the plan does not specify the answer:
+Stop and report NEEDS_CONTEXT mid-implementation if any of these arise and **neither the plan nor the task brief** specifies the answer. If the user has explicitly provided the answer in the task brief (e.g., "change the function signature to X"), that explicit specification overrides the stop condition — proceed.
 - Public API signature change (function signatures, CLI flags, HTTP endpoints, exported types)
 - New persisted data field or schema change
 - Error handling strategy with no clear precedent in the existing codebase

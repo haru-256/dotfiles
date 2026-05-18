@@ -33,7 +33,7 @@
           "implementer_v2": "allow",
           "explorer_v2": "allow",
           "planner_v2": "allow",
-          "reviewer_v2": "allow",
+          "reviewer_v2": "ask",
           "oracle_v2": "ask"
         },
         "glob": "allow",
@@ -266,7 +266,7 @@
       }
     },
     "reviewer_v2": {
-      "description": "V2 read-only diff review subagent. Checks correctness, spec compliance, security, tests, maintainability, and over-engineering.",
+      "description": "V2 read-only multi-artifact review subagent. Reviews plan, adr, readme, docs, or implementation. Checks goal fit, correctness, security, tests, and maintainability.",
       "mode": "subagent",
       "model": "opencode-go/deepseek-v4-pro",
       "reasoningEffort": "high",

@@ -35,7 +35,7 @@ You should:
 - Repeated failure: diagnose from failure history, then ask before invoking @oracle_v2.
 
 # Plan / ADR / README Writing
-When writing a plan, save it under `docs/superpowers/plans/`.
+When writing a plan, save it under `docs/superpowers/plans/` with filename `YYYY-MM-DD-<kebab-title>.md`.
 Use the writing-plans skill when applicable.
 After the plan body is written, always append these living-document sections at the end if they are not already present:
 
@@ -90,6 +90,8 @@ Surface this table to the user before dispatching @implementer_v2:
 | F3 | NIT | REJECT | Reviewer assumed a non-goal as requirement | No action |
 | F4 | MAJOR | ESCALATE | Affects state schema / future compatibility | Ask user before @oracle_v2 |
 
+Persistence precondition (applies to every verdict that writes to the plan file — APPROVE, REQUEST_CHANGES, ESCALATE, and any other): if the target plan file does not exist when you reach persistence (e.g., a direct review with no prior plan), create it under `docs/superpowers/plans/` with the filename convention and the living-document section skeleton, then persist into it. Use the title-cased filename slug as the H1 — purely mechanical, no acronym special-casing (`2026-05-16-webhook-verify.md` → `# Webhook Verify`). Do not fabricate a plan body you did not author — leave the body as a one-line note (`plan body not authored in this workflow`) and record the missing-plan gap under Open Questions using this format: `[missing-plan] [YYYY-MM-DD] No plan authored for <path>; skeleton created to preserve the audit trail; plan body not fabricated.` Never discard the audit trail because the file was absent.
+
 Persistence:
 
 1. Copy @reviewer_v2's structured findings verbatim into the plan's `Review Findings > Reviewer Raw Findings` section using this entry format:
@@ -102,15 +104,19 @@ Persistence:
    - F2: <Finding format from reviewer_v2.md>
    ```
 
+   Fill `ARTIFACT_TYPE` and `VERDICT` with the reviewer's literal values as-is (e.g., `implementation -> REQUEST_CHANGES`); do not change case.
+
 2. Append the adjudication table under `Review Findings > Planner V2 Adjudication`.
 
 Raw findings serve as audit history; do not delete or rewrite them after adjudication.
 For each DEFER, append a one-line entry under Open Questions.
+For each ESCALATE, append under Open Questions: `[oracle_v2] [YYYY-MM-DD] Finding F<N>: <one-line summary> — awaiting user approval before invoking @oracle_v2`.
 When dispatching @implementer_v2 for fixes, include only ACCEPT findings in the brief.
 Do not forward REJECT, DEFER, NEEDS_CONTEXT, or ESCALATE findings.
+When ACCEPT and ESCALATE findings co-exist: dispatch @implementer_v2 for ACCEPT items first, then ask the user about ESCALATE findings before continuing.
 
 Special cases:
-- Verdict APPROVE: no adjudication table. Append `[YYYY-MM-DD] ARTIFACT_TYPE -> APPROVE | no findings` under Reviewer Raw Findings.
+- Verdict APPROVE: no adjudication table. Under Reviewer Raw Findings, write the `#### [YYYY-MM-DD] ARTIFACT_TYPE -> APPROVE` header (same wrapper as other verdicts) and, beneath it, the single line `[YYYY-MM-DD] ARTIFACT_TYPE -> APPROVE | no findings`.
 - Verdict NEEDS_CONTEXT: provide missing context, then re-dispatch @reviewer_v2. No persistence.
 - Verdict ESCALATE: ask user before invoking @oracle_v2.
 

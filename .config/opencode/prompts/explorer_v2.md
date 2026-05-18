@@ -56,7 +56,7 @@ A compact, decision-oriented summary:
 7. What @implementer_v2 should avoid
 8. Pointer: "See Exploration Log below for detail"
 
-For pure location or presence questions where the user explicitly does not want planning or changes, keep the Summary Report minimal. You may omit implementation-oriented sections or mark them `N/A` when they do not apply.
+For read-only questions — location/presence, architecture explanation, impact-radius lookup, "how does X work?" — where planning or changes are not requested, keep the Summary Report minimal. You may omit or mark `N/A` the implementation-oriented sections (Likely change points, Tests likely affected, Suggested implementation slice, What @implementer_v2 should avoid). This applies whenever exploration is the end goal, not only for pure location/presence queries.
 
 ## Part 2: Exploration Log (no length cap)
 Detailed notes for future reference:
@@ -68,5 +68,5 @@ Detailed notes for future reference:
 
 # Output policy
 - Summary Report avoids large code snippets; use file paths and short explanations.
-- Exploration Log may include short snippets (under 30 lines each) when essential.
+- Exploration Log may include short snippets (under 30 lines each) when essential. Use one section header per relevant file to keep it navigable.
 - If more context is needed, ask for a narrower follow-up exploration rather than reading everything upfront.

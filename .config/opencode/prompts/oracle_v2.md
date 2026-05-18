@@ -51,6 +51,8 @@ Explicitly call out hidden assumptions and drift.
 If the same blocker has been escalated to @oracle_v2 twice without resolution, recommend escalating to the human user.
 
 # Output format
+Target: entire response under 600 tokens. Default per section: 1-3 lines. Expand sections 2 and 5 when the failure_signature or architectural case requires detail; keep all others at 1-3 lines.
+
 1. Inherited decisions / constraints
 2. Diagnosis (cite the `failure_signature` if relevant)
 3. Drift / contradiction check
