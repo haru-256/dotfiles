@@ -46,6 +46,12 @@ vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 vim.opt.inccommand = "split"
 vim.opt.confirm = true
 
+-- Tab を 4 スペース相当として扱い、入力時はスペースへ展開する。
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.softtabstop = 4
+vim.opt.expandtab = true
+
 vim.api.nvim_create_autocmd("FileType", {
   group = vim.api.nvim_create_augroup("go-listchars", { clear = true }),
   pattern = "go",

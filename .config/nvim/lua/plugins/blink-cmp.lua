@@ -7,14 +7,27 @@ return {
   },
   opts = {
     keymap = {
-      preset = "default",
+      preset = "super-tab",
+      ["<C-j>"] = { "select_next", "fallback" },
+      ["<C-k>"] = { "select_prev", "fallback" },
     },
     appearance = {
       nerd_font_variant = "mono",
     },
     completion = {
+      menu = {
+        border = "rounded",
+      },
       documentation = {
-        auto_show = true,
+        window = {
+          border = "rounded",
+        },
+      },
+    },
+    signature = {
+      enabled = true,
+      window = {
+        border = "rounded",
       },
     },
     sources = {

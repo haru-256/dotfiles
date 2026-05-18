@@ -9,6 +9,7 @@ return {
   },
   opts = {
     close_if_last_window = true,
+    open_files_do_not_replace_types = { "terminal", "Trouble", "qf", "edgy", "neo-tree" },
     filesystem = {
       bind_to_cwd = true,
       follow_current_file = {
