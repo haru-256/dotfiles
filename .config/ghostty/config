@@ -8,9 +8,14 @@ background-opacity = 0.85
 background-blur-radius = 20
 # background-blur = true
 
-font-family = "Inconsolata Nerd Font"
+# font-family = "Inconsolata Nerd Font"
+# font-size = 17
 # font-family = "HackGen35 Console NF"
-font-size = 17
+# font-size = 15
+font-family = "UDEV Gothic 35NF"
+font-size = 15
+# font-family = "PlemolJP35 Console NF"
+# font-size = 15
 
 # for fish キーバインドの競合
 keybind = "alt+left=unbind"

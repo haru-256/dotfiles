@@ -9,9 +9,11 @@ return {
   },
   opts = {
     close_if_last_window = true,
+    open_files_in_last_window = false,
     open_files_do_not_replace_types = { "terminal", "Trouble", "qf", "edgy", "neo-tree" },
     filesystem = {
       bind_to_cwd = true,
+      hijack_netrw_behavior = "open_default",
       follow_current_file = {
         enabled = true,
         leave_dirs_open = false,
@@ -22,8 +24,6 @@ return {
         hide_dotfiles = false,
       },
       window = {
-        position = "right",
-        width = 32,
         mappings = {
           ["<cr>"] = "open",
           ["l"] = "open",
@@ -36,6 +36,8 @@ return {
       },
     },
     window = {
+      position = "right",
+      width = 32,
       mappings = {
         ["l"] = "open",
         ["h"] = "close_node",

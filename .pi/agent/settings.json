@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.74.0",
+  "lastChangelogVersion": "0.75.3",
   "packages": [
     "git:github.com/otahontas/pi-coding-agent-catppuccin",
     "npm:pi-subagents",
@@ -7,7 +7,7 @@
     "npm:pi-intercom",
     "npm:pi-web-access"
   ],
-  "theme": "catppuccin-latte",
+  "theme": "catppuccin-latte-vivid",
   "compaction": {
     "enabled": true
   },

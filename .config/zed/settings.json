@@ -7,6 +7,7 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "ui_font_weight": 400.0,
   "buffer_font_weight": 400.0,
   "cli_default_open_behavior": "new_window",
   "outline_panel": {
@@ -63,8 +64,8 @@
   "tabs": {
     "file_icons": true,
   },
-  "agent_buffer_font_size": 16.5,
-  "agent_ui_font_size": 17.0,
+  "agent_buffer_font_size": 13.5,
+  "agent_ui_font_size": 15.5,
   "agent": {
     "dock": "left",
     "tool_permissions": {
@@ -112,7 +113,7 @@
     "background_coloring": "disabled",
     "coloring": "indent_aware",
   },
-  "ui_font_family": ".ZedSans",
+  "ui_font_family": "UDEV Gothic 35NF",
   "icon_theme": "Catppuccin Latte",
   "vim_mode": true,
   "terminal": {
@@ -124,8 +125,8 @@
       "FIG_NEW_SESSION": "\"1\"",
       "CW_NEW_SESSION": "\"1\"",
     },
-    "font_size": 15.5,
-    "font_family": "Inconsolata Nerd Font",
+    "font_size": 13.5,
+    "font_family": "UDEV Gothic 35NF",
   },
   "project_panel": {
     "hide_gitignore": false,
@@ -147,7 +148,7 @@
   },
   "cursor_blink": false,
   "autosave": "on_focus_change",
-  "buffer_font_family": "MyricaM M",
+  "buffer_font_family": "UDEV Gothic 35NF",
   "file_types": {
     "tailwindcss": ["*.css"],
     "nginx": ["nginx.conf"],
@@ -157,7 +158,7 @@
   "show_edit_predictions": true,
   "ensure_final_newline_on_save": true,
   "soft_wrap": "editor_width",
-  "ui_font_size": 16.5,
-  "buffer_font_size": 15.5,
+  "ui_font_size": 15.5,
+  "buffer_font_size": 13.5,
   "theme": "Catppuccin Latte",
 }
