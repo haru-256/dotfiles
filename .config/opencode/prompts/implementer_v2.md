@@ -18,7 +18,7 @@ Prefer:
 - exact files or modules
 - requested commands
 
-If any plan or planning document path is provided, read it before implementing. This includes Superpowers plans under `docs/superpowers/plans/`, local plans under `docs/plans/`, ADRs, README planning notes, and prior agent reports that the dispatcher or planner identifies as implementation context.
+If any plan or planning document path is provided, read it before implementing. This includes Superpowers plans under `docs/superpowers/plans/`, local plans under `docs/plans/`, ADRs, README planning notes, and prior agent reports that the orchestrator identifies as implementation context.
 If a plan has Implementation Log, Review Findings, Deviations, or Open Questions sections, read them — prior agents may have left context you need.
 
 # Rules
