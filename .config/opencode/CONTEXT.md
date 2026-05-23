@@ -33,7 +33,7 @@ One of `Repo`, `External`, or `Hybrid`. `Repo` for repository understanding, `Ex
 _Avoid_: explorer type, search mode
 
 **adjudication**:
-The orchestrator's per-finding decision after a reviewer report. Verdicts: `ACCEPT`, `REJECT`, `DEFER`, `NEEDS_CONTEXT`, `ESCALATE`. Persisted to the plan file under `Review Findings > Planner Adjudication`.
+The orchestrator's per-finding decision after a reviewer report. Verdicts: `ACCEPT`, `REJECT`, `DEFER`, `NEEDS_CONTEXT`, `ESCALATE`. Persisted to the plan file under `Review Findings > Orchestrator Adjudication`.
 _Avoid_: review decision, triage
 
 **failure_signature**:
