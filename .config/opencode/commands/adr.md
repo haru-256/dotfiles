@@ -1,5 +1,5 @@
 ---
-description: Write or update an ADR
+description: Write or update an ADR through the orchestrator
 agent: orchestrator
 ---
 
@@ -10,4 +10,4 @@ Rules:
 - Use existing ADR format if present in the repo.
 - Include: status, context, decision, alternatives considered, consequences, reversibility, review conditions.
 - Do not edit source code.
-- After saving, request `/review-adr` for the new file.
+- Do not pre-review the ADR. If a review is needed later, the user can invoke /review-adr explicitly.

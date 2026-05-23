@@ -1,5 +1,5 @@
 ---
-description: Plan and implement a non-trivial feature
+description: Plan and implement a non-trivial feature through the orchestrator
 agent: orchestrator
 ---
 
