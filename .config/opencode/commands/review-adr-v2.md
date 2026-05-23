@@ -1,5 +1,5 @@
 ---
-description: Critically review an ADR through v2 reviewer
+description: Critically review an ADR through reviewer
 agent: reviewer_v2
 ---
 

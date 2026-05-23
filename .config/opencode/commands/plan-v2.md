@@ -1,5 +1,5 @@
 ---
-description: Create a Superpowers implementation plan through the v2 planner
+description: Create a Superpowers implementation plan through the planner
 agent: planner_v2
 ---
 
@@ -18,12 +18,12 @@ Rules:
   <!-- This template is also defined in prompts/planner_v2.md. Keep them in sync on every edit. -->
 
   ### Reviewer Raw Findings
-  <!-- Planner V2 copies @reviewer_v2's structured findings verbatim here when invoking @reviewer_v2
+  <!-- Planner copies @reviewer_v2's structured findings verbatim here when invoking @reviewer_v2
        during a workflow. Direct /review-*-v2 calls do not write here.
        Raw findings are review input (audit history), not implementation instructions. -->
 
-  ### Planner V2 Adjudication
-  <!-- Planner V2 appends adjudication tables for v2 workflow reviews.
+  ### Planner Adjudication
+  <!-- Planner appends adjudication tables for workflow reviews.
        Only ACCEPT rows are implementation instructions:
        | ID | Severity | Decision | Reason | Action | -->
 

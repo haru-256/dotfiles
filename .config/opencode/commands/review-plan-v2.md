@@ -1,5 +1,5 @@
 ---
-description: Critically review a Superpowers plan through v2 reviewer
+description: Critically review a Superpowers plan through reviewer
 agent: reviewer_v2
 ---
 

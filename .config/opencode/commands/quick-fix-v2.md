@@ -1,5 +1,5 @@
 ---
-description: Small focused fix through the v2 implementer
+description: Small focused fix through the implementer
 agent: implementer_v2
 ---
 

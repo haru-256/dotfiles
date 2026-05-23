@@ -1,5 +1,5 @@
 ---
-description: Critically review documentation changes through v2 reviewer
+description: Critically review documentation changes through reviewer
 agent: reviewer_v2
 ---
 

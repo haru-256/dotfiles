@@ -1,9 +1,9 @@
 ---
-description: Plan and implement a non-trivial feature through the v2 planner
+description: Plan and implement a non-trivial feature through the planner
 agent: planner_v2
 ---
 
-Plan and implement the following feature with compact v2 delegation.
+Plan and implement the following feature with compact delegation.
 
 Feature:
 $ARGUMENTS

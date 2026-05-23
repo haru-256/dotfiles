@@ -1,5 +1,5 @@
 ---
-description: Critically review an implementation diff through v2 reviewer
+description: Critically review an implementation diff through reviewer
 agent: reviewer_v2
 ---
 

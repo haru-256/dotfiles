@@ -1,5 +1,5 @@
 ---
-description: Read-only deep repository exploration through v2 explorer
+description: Read-only deep repository exploration through explorer
 agent: explorer_v2
 ---
 

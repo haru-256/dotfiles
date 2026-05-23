@@ -1,5 +1,5 @@
 ---
-description: Critically review README changes through v2 reviewer
+description: Critically review README changes through reviewer
 agent: reviewer_v2
 ---
 
