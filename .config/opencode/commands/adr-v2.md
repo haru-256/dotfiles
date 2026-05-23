@@ -1,6 +1,6 @@
 ---
-description: Write or update an ADR through the planner
-agent: planner_v2
+description: Write or update an ADR through the orchestrator
+agent: orchestrator_v2
 ---
 
 Write or update an ADR for the following decision:

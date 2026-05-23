@@ -1,6 +1,6 @@
 ---
-description: Plan and implement a non-trivial feature through the planner
-agent: planner_v2
+description: Plan and implement a non-trivial feature through the orchestrator
+agent: orchestrator_v2
 ---
 
 Plan and implement the following feature with compact delegation.

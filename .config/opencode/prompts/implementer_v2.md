@@ -70,5 +70,5 @@ Always end with:
    - `test_failure/auth.test_token_refresh/jwt_clock_skew`
    - `import_error/missing_module/dep_not_installed`
    - `type_error/state_dict/schema_mismatch`
-   The same signature on retry signals "same failure" — dispatcher_v2 and planner_v2 use this to detect loops.
+   The same signature on retry signals "same failure" — orchestrator_v2 uses this to detect loops.
 10. Suggested next action
