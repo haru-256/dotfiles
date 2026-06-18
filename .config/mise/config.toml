@@ -42,6 +42,7 @@ opencode = "latest"
 bun = "latest"
 helix = "latest"
 "npm:@earendil-works/pi-coding-agent" = "latest"
+"npm:@kilocode/cli" = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = []

@@ -2,10 +2,12 @@
 
 A custom multi-agent configuration for the opencode CLI. A single persistent **orchestrator** coordinates ephemeral **specialist subagents** for repository exploration, implementation, and review.
 
+`CONTEXT.md` is a domain-context document for the opencode agent system. It records vocabulary, roles, and design intent for humans and agents. It is not an executable config file; runtime behavior is controlled by `opencode.json`, prompt files under `prompts/`, command files, and loaded skills.
+
 ## Language
 
 **orchestrator**:
-The primary agent of the v2 system (`orchestrator_v2`). Holds persistent context across all user turns, decides routing, writes plans/ADRs/docs, adjudicates review findings, and delegates execution to specialists.
+The primary agent of the v2 system (`orchestrator`). Holds persistent context across all user turns, decides routing, writes plans/ADRs/docs, adjudicates review findings, and delegates execution to specialists.
 _Avoid_: planner, dispatcher, main agent
 
 **specialist subagent**:
@@ -37,12 +39,14 @@ The orchestrator's per-finding decision after a reviewer report. Verdicts: `ACCE
 _Avoid_: review decision, triage
 
 **failure_signature**:
-A stable identifier emitted in a specialist's `BLOCKED` report. The orchestrator tracks repeats; two consecutive identical signatures trigger automatic `oracle_v2` escalation.
+A stable identifier emitted in a specialist's `BLOCKED` report. The orchestrator tracks repeats; two consecutive identical signatures trigger automatic `oracle` escalation.
 _Avoid_: error code, stack trace hash
 
 **oracle escalation**:
-Automatic invocation of `oracle_v2` after two consecutive identical failure_signatures from the same specialist, or on orchestrator-detected drift. Bounded to one call per failure loop.
+Automatic invocation of `oracle` after two consecutive identical failure_signatures from the same specialist, or on orchestrator-detected drift. Bounded to one call per failure loop.
 _Avoid_: oracle consultation, oracle ask
+
+Subagent sessions are reused when continuity improves correctness, such as same-task exploration, implementation retries, and tracking the same failure signature. Fresh subagents are preferred when independence improves correctness, such as reviews, oracle decisions, independent verification, and second opinions.
 
 ## Flagged ambiguities
 

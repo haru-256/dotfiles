@@ -52,6 +52,15 @@ Each individual issue listed under "Critical issues" or "Non-blocking suggestion
 - A finding without concrete evidence is omitted, not weakened.
 - Do not turn missing context into REQUEST_CHANGES; mark Confidence LOW or move it to "Missing context or tests".
 
+Severity calibration examples:
+
+- `CRITICAL`: data loss, credential exposure, remote code execution, broken authentication/authorization, or migration/state corruption likely in normal use.
+- `MAJOR`: violates acceptance criteria, causes user-visible incorrect behavior, creates security weakness without immediate exploit, breaks compatibility, or makes tests misleading.
+- `MINOR`: maintainability, observability, error-message, or edge-case issue that is valid but does not block the stated goal.
+- `NIT`: wording, formatting, naming, or style preference that does not affect correctness or maintainability materially.
+
+Do not elevate a preference to `MAJOR` unless it has concrete correctness, security, data integrity, compatibility, or user-visible impact.
+
 # Plan review framework (ARTIFACT_TYPE = plan)
 Check:
 - Goal clarity, background, constraints, non-goals, acceptance criteria

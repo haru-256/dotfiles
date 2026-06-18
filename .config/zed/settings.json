@@ -67,6 +67,7 @@
   "agent_buffer_font_size": 13.5,
   "agent_ui_font_size": 15.5,
   "agent": {
+    "single_file_review": true,
     "dock": "left",
     "tool_permissions": {
       "default": "allow",
@@ -161,4 +162,16 @@
   "ui_font_size": 15.5,
   "buffer_font_size": 13.5,
   "theme": "Catppuccin Latte",
+  // 予約後とコメントだけfont styleを変更
+  // https://dev.to/jakecarpenter/styling-code-syntax-in-zed-3cm8
+  "experimental.theme_overrides": {
+    "syntax": {
+      "keyword": {
+        "font_style": "italic",
+      },
+      "comment": {
+        "font_style": "italic",
+      },
+    },
+  },
 }

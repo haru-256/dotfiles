@@ -3,11 +3,18 @@
   "default_agent": "orchestrator",
   // エージェント別のツール制御
   "agent": {
+    "build": { "disable": true },
+    "plan": { "disable": true },
+    "general": { "disable": true },
+    "explore": { "disable": true },
+    "scout": { "disable": true },
     "orchestrator": {
       "description": "Primary orchestrator agent. Receives user requests, routes to specialists, writes plans/ADRs/README/docs, adjudicates reviewer findings, and handles failure loops. Does not edit source code or tests.",
       "mode": "primary",
       "model": "openai/gpt-5.5",
       "reasoningEffort": "medium",
+      // "model": "opencode-go/deepseek-v4-pro",
+      // "reasoningEffort": "max",
       "textVerbosity": "low",
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/orchestrator.md}",
@@ -42,7 +49,7 @@
     "implementer": {
       "description": "Implementation subagent. Makes scoped code changes, runs checks, fixes failures, and reports compact results.",
       "mode": "all",
-      "model": "opencode-go/kimi-k2.6",
+      "model": "opencode-go/kimi-k2.7-code",
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/implementer.md}",
       "permission": {
@@ -70,8 +77,8 @@
     "explorer": {
       "description": "Read-only deep repository exploration subagent. Finds relevant files, dependencies, data/control flow, and likely impact radius. Returns compact reports.",
       "mode": "all",
-      "model": "opencode-go/deepseek-v4-flash",
-      "reasoningEffort": "high",
+      "model": "opencode-go/deepseek-v4-pro",
+      "reasoningEffort": "max",
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/explorer.md}",
       "permission": {
@@ -99,8 +106,9 @@
     "reviewer": {
       "description": "Read-only multi-artifact review subagent. Reviews plan, adr, readme, docs, or implementation. Checks goal fit, correctness, security, tests, and maintainability.",
       "mode": "all",
-      "model": "opencode-go/deepseek-v4-pro",
-      "reasoningEffort": "max",
+      // "model": "opencode-go/minimax-m3",
+      "model": "opencode-go/glm-5.2",
+      "reasoningEffort": "high",
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/reviewer.md}",
       "permission": {
