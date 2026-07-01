@@ -11,7 +11,7 @@ kubectl = "latest"
 kubectx = "latest"
 kustomize = "latest"
 neovim = "latest"
-node = "25"
+node = "lts"
 protoc = "latest"
 python = "3.12"
 ripgrep = "latest"
@@ -43,6 +43,9 @@ bun = "latest"
 helix = "latest"
 "npm:@earendil-works/pi-coding-agent" = "latest"
 "npm:@kilocode/cli" = "latest"
+"npm:cline" = "latest"
+azure-cli = { version = "latest", uvx_args = "--prerelease=allow" }
+tirith = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = []

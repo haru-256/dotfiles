@@ -1,0 +1,98 @@
+#!/bin/sh
+
+# Render the Antigravity CLI status line from its JSON input.
+red='\033[31m'
+green='\033[32m'
+yellow='\033[33m'
+reset='\033[0m'
+
+print_error() {
+  printf '%b● error%b\n' "$red" "$reset"
+}
+
+data=$(jq -r '
+  def value($path): try getpath($path) catch null;
+  def text_or_empty:
+    if type == "string" then gsub("[\u0000-\u001f\u007f-\u009f]"; "") else "" end;
+  def array_count: if type == "array" then length else 0 end;
+
+  (value(["agent_state"]) | text_or_empty) as $raw_state |
+  (if $raw_state == "idle" then "idle"
+   elif $raw_state == "thinking" or $raw_state == "working" or
+        $raw_state == "tool_use" or $raw_state == "initializing" then "working"
+   else "error"
+   end) as $state |
+  (value(["terminal_width"]) | if type == "number" then floor else 0 end) as $width |
+  (value(["vcs", "branch"]) | text_or_empty) as $branch |
+  (value(["vcs", "dirty"]) | if . == true then "dirty" else "clean" end) as $dirty |
+  (value(["model", "display_name"]) | text_or_empty) as $display_name |
+  (value(["model", "id"]) | text_or_empty) as $model_id |
+  (if $display_name != "" then $display_name
+   elif $model_id != "" then $model_id
+   else "unknown"
+   end) as $model |
+  (value(["context_window", "used_percentage"])) as $usage |
+  (if $usage | type == "number" then
+      ($usage | round | if . < 0 then 0 elif . > 100 then 100 else . end | tostring)
+   else "?"
+   end) as $context |
+  (value(["subagents"]) | array_count | tostring) as $agents |
+  (value(["background_tasks"]) | array_count | tostring) as $tasks |
+  [$state, $width, $branch, $dirty, $model, $context, $agents, $tasks] | @sh
+' 2>/dev/null) || {
+  print_error
+  exit 0
+}
+
+eval "set -- $data"
+state=$1
+width=$2
+branch=$3
+dirty=$4
+model=$5
+context=$6
+agents=$7
+tasks=$8
+
+if [ "$state" = "error" ]; then
+  print_error
+  exit 0
+fi
+
+case $state in
+  idle) printf '%b● idle%b' "$green" "$reset" ;;
+  working) printf '%b● working%b' "$yellow" "$reset" ;;
+esac
+
+if [ "$width" -ge 80 ] && [ -n "$branch" ]; then
+  printf ' | %s %s' "$branch" "$dirty"
+fi
+
+if [ "$width" -ge 60 ]; then
+  printf ' | %s' "$model"
+fi
+
+if [ "$context" = "?" ]; then
+  printf ' | ctx ?'
+else
+  filled=$(((context + 5) / 10))
+  empty=$((10 - filled))
+  bar=
+  i=0
+  while [ "$i" -lt "$filled" ]; do
+    bar="${bar}█"
+    i=$((i + 1))
+  done
+  i=0
+  while [ "$i" -lt "$empty" ]; do
+    bar="${bar}░"
+    i=$((i + 1))
+  done
+  printf ' | ctx [%s] %s%%' "$bar" "$context"
+fi
+
+if [ "$width" -ge 100 ]; then
+  printf ' | agents %s | tasks %s' "$agents" "$tasks"
+fi
+
+printf '\n'

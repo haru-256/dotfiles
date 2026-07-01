@@ -1,0 +1,26 @@
+{
+  "allowNonWorkspaceAccess": true,
+  "colorScheme": "light",
+  "permissions": {
+    "allow": [
+      "command(mise)",
+      "command(grep)",
+      "command(find)",
+      "command(ls)",
+      "command(which)",
+      "command(agy)",
+      "command(cat)",
+      "command(head)",
+      "command(tail)"
+    ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.gemini/antigravity-cli/statusline.sh",
+    "enabled": true
+  },
+  "trustedWorkspaces": [
+    "/Users/haru256/repo/github.com/haru-256/hacker-rank",
+    "/Users/haru256/Documents/projects/dotfiles"
+  ]
+}

@@ -23,6 +23,10 @@
   "semantic_tokens": "combined",
   "agent_servers": {
     "opencode": {
+      "default_config_options": {
+        "effort": "medium",
+        "model": "openai/gpt-5.5"
+      },
       "favorite_config_option_values": {
         "model": [
           "opencode-go/kimi-k2.6",
@@ -67,6 +71,7 @@
   "agent_buffer_font_size": 13.5,
   "agent_ui_font_size": 15.5,
   "agent": {
+    "terminal_init_command": "OPENCODE_ENABLE_EXA=1 opencode",
     "single_file_review": true,
     "dock": "left",
     "tool_permissions": {
@@ -115,7 +120,11 @@
     "coloring": "indent_aware",
   },
   "ui_font_family": "UDEV Gothic 35NF",
-  "icon_theme": "Catppuccin Latte",
+  "icon_theme": {
+    "mode": "dark",
+    "light": "Catppuccin Latte",
+    "dark": "Catppuccin Latte"
+  },
   "vim_mode": true,
   "terminal": {
     "shell": {
@@ -161,7 +170,11 @@
   "soft_wrap": "editor_width",
   "ui_font_size": 15.5,
   "buffer_font_size": 13.5,
-  "theme": "Catppuccin Latte",
+  "theme": {
+    "mode": "light",
+    "light": "Catppuccin Latte",
+    "dark": "Catppuccin Mocha"
+  },
   // 予約後とコメントだけfont styleを変更
   // https://dev.to/jakecarpenter/styling-code-syntax-in-zed-3cm8
   "experimental.theme_overrides": {

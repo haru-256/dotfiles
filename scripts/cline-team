@@ -1,0 +1,72 @@
+#!/bin/sh
+set -eu
+
+# Launch Cline Agent Teams with the adaptive orchestrator prompt.
+#
+# Use normal `cline` for small/local tasks. Use this wrapper when the task
+# benefits from multi-step coordination, independent implementation/review,
+# or rare oracle-style decision support.
+
+physical_path() {
+  CDPATH= cd -- "$(dirname -- "$1")" && printf '%s/%s\n' "$(pwd -P)" "$(basename -- "$1")"
+}
+
+find_real_cline() {
+  self=$(physical_path "$0")
+
+  if [ -n "${CLINE_BIN_PATH:-}" ] && [ -x "$CLINE_BIN_PATH" ]; then
+    candidate=$(physical_path "$CLINE_BIN_PATH")
+    if [ "$candidate" != "$self" ]; then
+      printf '%s\n' "$CLINE_BIN_PATH"
+      return 0
+    fi
+  fi
+
+  if command -v mise >/dev/null 2>&1; then
+    real=$(mise which cline 2>/dev/null || true)
+    if [ -n "${real:-}" ] && [ -x "$real" ]; then
+      candidate=$(physical_path "$real")
+      if [ "$candidate" != "$self" ]; then
+        printf '%s\n' "$real"
+        return 0
+      fi
+    fi
+  fi
+
+  for candidate in \
+    "$HOME/.local/share/mise/installs/npm-cline/latest/bin/cline" \
+    "$HOME/.local/share/mise/installs/npm-cline/3.0.34/lib/node_modules/cline/bin/cline" \
+    "$HOME/.local/share/mise/installs/npm-cline/3.0.31/lib/node_modules/cline/bin/cline" \
+    "$HOME/.npm-global/bin/cline" \
+    "$HOME/.bun/bin/cline" \
+    "/opt/homebrew/bin/cline" \
+    "/usr/local/bin/cline"
+  do
+    if [ -x "$candidate" ]; then
+      candidate_physical=$(physical_path "$candidate")
+      if [ "$candidate_physical" != "$self" ]; then
+        printf '%s\n' "$candidate"
+        return 0
+      fi
+    fi
+  done
+
+  printf '%s\n' "cline-team: real Cline executable not found" >&2
+  exit 127
+}
+
+prompt_path="${CLINE_ORCHESTRATOR_PROMPT:-$HOME/.config/cline/prompts/orchestrator.md}"
+
+if [ ! -r "$prompt_path" ]; then
+  printf '%s\n' "cline-team: orchestrator prompt not readable: $prompt_path" >&2
+  printf '%s\n' "cline-team: symlink ~/dotfiles/.config/cline/prompts to ~/.config/cline/prompts first" >&2
+  exit 66
+fi
+
+exec "$(find_real_cline)" \
+  --team-name "${CLINE_TEAM_NAME:-dotfiles-agents}" \
+  --provider "${CLINE_PROVIDER:-openai-codex}" \
+  --model "${CLINE_MODEL:-gpt-5.5}" \
+  --thinking "${CLINE_THINKING:-medium}" \
+  --system "$(cat "$prompt_path")" \
+  "$@"

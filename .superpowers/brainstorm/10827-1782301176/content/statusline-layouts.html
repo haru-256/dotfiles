@@ -1,0 +1,19 @@
+<h2>agy statusline の候補</h2>
+<p class="subtitle">端末の下部に表示される一行です。情報量と読みやすさのバランスで選んでください。</p>
+
+<div class="cards">
+  <div class="card" data-choice="compact" onclick="toggleSelect(this)">
+    <div class="card-image"><div style="background:#eff1f5;color:#4c4f69;border:1px solid #ccd0da;border-radius:6px;padding:14px;font-family:monospace;font-size:14px;white-space:nowrap;overflow:hidden"><span style="color:#8839ef">●</span> idle  <span style="color:#1e66f5">main</span>  ✓ clean  <span style="color:#40a02b">Gemini</span>  ctx 8%</div></div>
+    <div class="card-body"><h3>A. コンパクト</h3><p>状態・ブランチ・変更有無・モデル・コンテキスト使用率だけ。常時表示でも邪魔になりません。</p></div>
+  </div>
+  <div class="card" data-choice="balanced" onclick="toggleSelect(this)">
+    <div class="card-image"><div style="background:#eff1f5;color:#4c4f69;border:1px solid #ccd0da;border-radius:6px;padding:14px;font-family:monospace;font-size:14px;white-space:nowrap;overflow:hidden"><span style="color:#8839ef">●</span> working  <span style="color:#1e66f5">main</span>  <span style="color:#e64553">✚ dirty</span>  <span style="color:#40a02b">Gemini 3.5 Flash</span>  ctx [██░░░░░░░░] 18%  agents 2  tasks 1</div></div>
+    <div class="card-body"><h3>B. バランス型（推奨）</h3><p>通常の開発判断に必要な情報を揃え、並列エージェントとバックグラウンド実行も見えるようにします。</p></div>
+  </div>
+  <div class="card" data-choice="minimal" onclick="toggleSelect(this)">
+    <div class="card-image"><div style="background:#eff1f5;color:#4c4f69;border:1px solid #ccd0da;border-radius:6px;padding:14px;font-family:monospace;font-size:14px;white-space:nowrap;overflow:hidden"><span style="color:#8839ef">●</span> working  ·  ctx 18%</div></div>
+    <div class="card-body"><h3>C. 最小</h3><p>エージェント状態とコンテキスト使用率のみ。Git やモデルは必要なときにコマンドで確認します。</p></div>
+  </div>
+</div>
+
+<p class="subtitle" style="margin-top:24px">カードをクリックして選択してください。選択後、端末でも A / B / C を教えてください。</p>

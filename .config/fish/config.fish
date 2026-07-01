@@ -80,9 +80,6 @@ if type -q glow
     alias md="glow -p -"
 end
 alias cdr="cd (git rev-parse --show-toplevel)"
-# if type -q npx
-#     alias gemini="npx https://github.com/google-gemini/gemini-cli"
-# end
 
 # theme
 fish_config theme choose "Catppuccin Latte"
@@ -122,8 +119,7 @@ bind \c] "ghq-fzf && commandline -f repaint"
 fish_add_path /opt/homebrew/Cellar/fish/4.0.0/share/fish/functions
 
 alias oc="OPENCODE_ENABLE_EXA=1 opencode"
+fish_add_path --prepend --move "$HOME/.local/bin"
 
-
-
-# Added by Antigravity CLI installer
-set -gx PATH "/Users/haru256/.local/bin" $PATH
+# https://github.com/sheeki03/tirith
+tirith init --shell fish | source

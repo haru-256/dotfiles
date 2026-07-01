@@ -82,3 +82,59 @@ ln -s ~/dotfiles/.config/opencode/commands      ~/.config/opencode/commands
 # プラグインのインストール（bun が mise で管理されている前提）
 cd ~/.config/opencode && bun install
 ```
+
+### Cline
+
+token を節約しつつコーディング性能を上げるため、Cline は adaptive workflow で使います。
+
+- 小さく局所的な作業: 通常の `cline`
+- 複数 step、広い調査、独立レビュー、失敗ループがある作業: `cline-team`
+- 常時読むルール: `.cline/rules/adaptive-coding.md`
+- escalation 時だけ読む role prompt: `.config/cline/prompts/*.md`
+
+```sh
+mkdir -p ~/.local/bin ~/.config/cline
+ln -s ~/dotfiles/scripts/cline-team ~/.local/bin/cline-team
+ln -s ~/dotfiles/.config/cline/prompts ~/.config/cline/prompts
+chmod +x ~/dotfiles/scripts/cline-team
+```
+
+通常は安い single-session path を使います。
+
+```sh
+cline "小さな修正を実装して"
+```
+
+複雑な作業だけ Agent Teams に escalation します。
+
+```sh
+cline-team
+```
+
+prompt を渡して Agent Teams を起動することもできます。
+
+```sh
+cline-team "調査して、必要なら実装してレビューして"
+```
+
+`cline-team` の既定値は環境変数で上書きできます。
+
+```sh
+CLINE_TEAM_NAME=my-task CLINE_THINKING=high cline-team "..."
+```
+
+通常の `cline` は mise などでインストールした実体をそのまま使います。
+
+### Antigravity CLI
+
+```sh
+mkdir -p ~/.gemini/antigravity-cli
+if [ -e ~/.gemini/antigravity-cli/settings.json ] && [ ! -L ~/.gemini/antigravity-cli/settings.json ]; then
+  mv ~/.gemini/antigravity-cli/settings.json ~/.gemini/antigravity-cli/settings.json.backup
+fi
+ln -s "$(pwd)/.gemini/antigravity-cli/settings.json" ~/.gemini/antigravity-cli/settings.json
+ln -s "$(pwd)/scripts/agy-statusline" ~/.gemini/antigravity-cli/statusline.sh
+chmod +x "$(pwd)/scripts/agy-statusline"
+```
+
+`statusLine.command` は `~/.gemini/antigravity-cli/statusline.sh` を参照します。リポジトリのクローン先が変わった場合は、このシンボリックリンクを張り直してください。
