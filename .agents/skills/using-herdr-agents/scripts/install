@@ -1,0 +1,42 @@
+#!/bin/sh
+set -eu
+
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+skill_dir=$(CDPATH= cd -- "$script_dir/.." && pwd -P)
+
+bin_dir="${HERDR_AGENT_INSTALL_PREFIX:-$HOME/.local/bin}"
+config_dir="${HERDR_AGENT_INSTALL_CONFIG_DIR:-$HOME/.config/herdr}"
+skills_dir="${HERDR_AGENT_INSTALL_SKILLS_DIR:-$HOME/.agents/skills}"
+dry_run="${HERDR_AGENT_INSTALL_DRY_RUN:-0}"
+
+link_pair() {
+  source_path="$1"
+  target_path="$2"
+  if [ "$dry_run" = "1" ]; then
+    printf '%s -> %s\n' "$target_path" "$source_path"
+    return 0
+  fi
+  mkdir -p "$(dirname -- "$target_path")"
+  if [ -e "$target_path" ] && [ ! -L "$target_path" ]; then
+    if [ -d "$target_path" ] && rmdir "$target_path" 2>/dev/null; then
+      :
+    else
+      printf '%s\n' "install: target exists and is not an empty directory or symlink: $target_path" >&2
+      exit 73
+    fi
+  fi
+  ln -sfn "$source_path" "$target_path"
+}
+
+if [ "$dry_run" != "1" ]; then
+  mkdir -p "$bin_dir" "$config_dir" "$skills_dir"
+fi
+
+link_pair "$skill_dir/scripts/herdr-agent" "$bin_dir/herdr-agent"
+link_pair "$skill_dir/scripts/herdr-agent-session" "$bin_dir/herdr-agent-session"
+link_pair "$skill_dir/prompts" "$config_dir/agents"
+link_pair "$skill_dir" "$skills_dir/using-herdr-agents"
+
+if [ "$dry_run" != "1" ]; then
+  printf '%s\n' "Installed using-herdr-agents symlinks."
+fi

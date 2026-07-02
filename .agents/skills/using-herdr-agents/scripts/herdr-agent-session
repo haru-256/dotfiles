@@ -1,0 +1,164 @@
+#!/bin/sh
+set -eu
+
+physical_dirname() {
+  CDPATH= cd -- "$(dirname -- "$1")" && pwd -P
+}
+
+physical_path() {
+  CDPATH= cd -- "$(dirname -- "$1")" && printf '%s/%s\n' "$(pwd -P)" "$(basename -- "$1")"
+}
+
+resolve_path() {
+  target="$1"
+
+  while [ -L "$target" ]; do
+    link_target=$(readlink "$target")
+    case "$link_target" in
+      /*)
+        target="$link_target"
+        ;;
+      *)
+        target=$(physical_dirname "$target")/"$link_target"
+        ;;
+    esac
+  done
+
+  physical_path "$target"
+}
+
+if [ "$#" -lt 2 ]; then
+  printf '%s\n' "usage: $(basename "$0") <scout|coder|auditor|advisor> <task prompt>" >&2
+  exit 64
+fi
+
+script_path=$(resolve_path "$0")
+script_dir=$(physical_dirname "$script_path")
+. "$script_dir/herdr-agent-lib"
+
+role="$1"
+shift
+task_prompt="$*"
+
+herdr_agent_validate_role "$role"
+
+repo_root=$(herdr_agent_repo_root)
+
+branch=$(git -C "$repo_root" branch --show-current 2>/dev/null || true)
+if [ -z "${branch:-}" ]; then
+  branch="detached"
+fi
+
+herdr_agent_role_config "$role" session "herdr-agent-session"
+backend_name="$HERDR_AGENT_BACKEND"
+model_name="$HERDR_AGENT_MODEL"
+
+if [ "${HERDR_AGENT_CONTEXT_KEY+x}" = "x" ] && [ -n "$HERDR_AGENT_CONTEXT_KEY" ]; then
+  context_key=$(herdr_agent_sanitize_part "$HERDR_AGENT_CONTEXT_KEY")
+  has_context_key=1
+else
+  context_key="no-context-$$-$(date +%H%M%S)"
+  has_context_key=0
+fi
+backend_key=$(herdr_agent_sanitize_part "$backend_name-$model_name")
+repo_key=$(printf '%s' "$repo_root" | cksum | awk '{print $1}')
+default_agent_name="herdr-${role}-${repo_key}-${backend_key}-${context_key}"
+agent_name="${HERDR_AGENT_NAME:-$default_agent_name}"
+
+reuse="${HERDR_AGENT_REUSE:-auto}"
+herdr_agent_validate_reuse "$reuse" "herdr-agent-session"
+
+if [ "$has_context_key" = "0" ]; then
+  case "$reuse" in
+    auto)
+      reuse="never"
+      ;;
+    require)
+      printf '%s\n' "herdr-agent-session: HERDR_AGENT_CONTEXT_KEY is required when HERDR_AGENT_REUSE=require" >&2
+      exit 65
+      ;;
+  esac
+fi
+
+runner="$script_dir/herdr-agent"
+if [ ! -x "$runner" ] && command -v herdr-agent >/dev/null 2>&1; then
+  runner=$(command -v herdr-agent)
+fi
+
+if [ ! -x "$runner" ]; then
+  printf '%s\n' "herdr-agent-session: runner not executable: $runner" >&2
+  exit 127
+fi
+
+runner_mode="${HERDR_AGENT_SESSION_MODE:-interactive}"
+case "$runner_mode" in
+  interactive|oneshot) ;;
+  *)
+    printf '%s\n' "herdr-agent-session: HERDR_AGENT_SESSION_MODE must be interactive or oneshot: $runner_mode" >&2
+    exit 65
+    ;;
+esac
+
+split="${HERDR_AGENT_SPLIT:-right}"
+case "$split" in
+  right|down) ;;
+  *)
+    printf '%s\n' "herdr-agent-session: HERDR_AGENT_SPLIT must be right or down: $split" >&2
+    exit 65
+    ;;
+esac
+
+focus="${HERDR_AGENT_FOCUS:-1}"
+case "$focus" in
+  1|true|yes)
+    focus_flag="--focus"
+    ;;
+  0|false|no)
+    focus_flag="--no-focus"
+    ;;
+  *)
+    printf '%s\n' "herdr-agent-session: HERDR_AGENT_FOCUS must be 1 or 0: $focus" >&2
+    exit 65
+    ;;
+esac
+
+if [ "$reuse" != "never" ] && herdr agent get "$agent_name" >/dev/null 2>&1; then
+  if herdr agent wait "$agent_name" --status idle --timeout "${HERDR_AGENT_REUSE_WAIT_MS:-1000}" >/dev/null 2>&1; then
+    reuse_prompt=$(printf '[herdr-agent reuse]\nrole=%s\ncontext=%s\n\n%s' "$role" "$context_key" "$task_prompt")
+    herdr agent send "$agent_name" "$reuse_prompt"
+    if [ "$focus_flag" = "--focus" ]; then
+      herdr agent focus "$agent_name" >/dev/null 2>&1 || true
+    fi
+    exit 0
+  fi
+
+  if [ "$reuse" = "require" ]; then
+    printf '%s\n' "herdr-agent-session: matching agent exists but is not idle: $agent_name" >&2
+    exit 69
+  fi
+
+  agent_name="${agent_name}-$(date +%H%M%S)"
+elif [ "$reuse" = "require" ]; then
+  printf '%s\n' "herdr-agent-session: matching reusable agent not found: $agent_name" >&2
+  exit 69
+fi
+
+if [ "${HERDR_AGENT_SESSION_DRY_RUN:-0}" = "1" ]; then
+  printf 'ROLE=%s\n' "$role"
+  printf 'BACKEND=%s\n' "$backend_name"
+  printf 'MODEL=%s\n' "$model_name"
+  printf 'RUNNER_MODE=%s\n' "$runner_mode"
+  printf 'AGENT_NAME=%s\n' "$agent_name"
+  printf 'REPO_ROOT=%s\n' "$repo_root"
+  printf 'RUNNER=%s\n' "$runner"
+  printf 'REUSE=%s\n' "$reuse"
+  printf 'CONTEXT_KEY=%s\n' "$context_key"
+  exit 0
+fi
+
+exec herdr agent start "$agent_name" \
+  --cwd "$repo_root" \
+  --split "$split" \
+  --env "HERDR_AGENT_MODE=$runner_mode" \
+  "$focus_flag" \
+  -- "$runner" "$role" "$task_prompt"

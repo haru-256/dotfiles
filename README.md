@@ -42,9 +42,15 @@ This repository serves as a collection of configuration files that I use to pers
 
 - **VSCode Keybindings**: [`vscode/keybindings.json`](command:_github.copilot.openRelativePath?%5B%7B%22scheme%22%3A%22file%22%2C%22authority%22%3A%22%22%2C%22path%22%3A%22%2FUsers%2Fharu256%2FDocuments%2Fprojects%2Fdotfiles%2Fvscode%2Fkeybindings.json%22%2C%22query%22%3A%22%22%2C%22fragment%22%3A%22%22%7D%2C%22f3a5329d-980b-4209-9e7f-8f06eb22f622%22%5D "/Users/haru256/Documents/projects/dotfiles/vscode/keybindings.json")
 
+### Herdr
+
+- **Herdr Configuration**: [`.config/herdr/config.toml`](.config/herdr/config.toml)
+- **Herdr Agent Package**: [`.agents/skills/using-herdr-agents`](.agents/skills/using-herdr-agents)
+- **Herdr Agent Prompts**: [`.agents/skills/using-herdr-agents/prompts`](.agents/skills/using-herdr-agents/prompts)
+
 ## Themes and Plugins
 
-- **Catppuccin Latte Theme**: Used across Fish, Neovim, Ghostty, WezTerm, Zed, Starship, and Zellij.
+- **Catppuccin Latte Theme**: Used across Fish, Neovim, Ghostty, WezTerm, Zed, Starship, Zellij, and Herdr.
 
 ## Usage
 
@@ -67,6 +73,9 @@ mkdir -p ~/.config/nvim
 ln -s ~/dotfiles/.config/nvim/init.lua ~/.config/nvim/init.lua
 ln -s ~/dotfiles/.config/nvim/lua ~/.config/nvim/lua
 ln -s ~/dotfiles/vscode/keybindings.json ~/.config/Code/User/keybindings.json
+mkdir -p ~/.config/herdr
+ln -s ~/dotfiles/.config/herdr/config.toml ~/.config/herdr/config.toml
+~/dotfiles/.agents/skills/using-herdr-agents/scripts/install
 ```
 
 ### OpenCode
@@ -138,3 +147,69 @@ chmod +x "$(pwd)/scripts/agy-statusline"
 ```
 
 `statusLine.command` は `~/.gemini/antigravity-cli/statusline.sh` を参照します。リポジトリのクローン先が変わった場合は、このシンボリックリンクを張り直してください。
+
+### Herdr Multi-Agent System
+
+Codex remains Planner/Judge. Herdr launches specialist worker panes only when useful.
+
+| Role | Harness | Model | Use |
+| --- | --- | --- | --- |
+| Scout | OpenCode Go by default, Cline Pass fallback | `opencode-go/deepseek-v4-flash` or `deepseek-v4-flash` | read-only repository exploration |
+| Coder | Agy | `Gemini 3.5 Flash (Medium)` | scoped implementation and validation |
+| Auditor | Agy | `Gemini 3.5 Flash (Medium)` | read-only diff or artifact review |
+| Advisor | Codex | `gpt-5.5` with `high` or `xhigh` reasoning | rare failure-loop or architecture judgment |
+
+The Herdr agent package lives at `.agents/skills/using-herdr-agents`.
+It owns the skill guidance, prompts, scripts, install script, and package-local tests.
+
+`herdr-agent` is the one-shot runner used for direct execution and routing checks.
+`herdr-agent-session` is the Herdr launcher for retained context. Use it only when follow-up or startup-overhead savings are worth the context-contamination risk.
+
+Operational contract:
+
+- Prerequisites: `herdr`, `mise`, and the selected backend CLI are available on `PATH`.
+- OpenCode and Cline are launched through `mise exec --`; Agy and Codex are launched directly.
+- `scripts/install` only creates or updates symlinks for the package commands, prompts, and skill. It does not copy files or edit shell startup files.
+- The root `tests/herdr-agent.sh` wrapper is the repo-level validation entrypoint.
+
+Dry-run examples:
+
+```sh
+HERDR_AGENT_DRY_RUN=1 .agents/skills/using-herdr-agents/scripts/herdr-agent scout "find the relevant files for ..."
+HERDR_AGENT_DRY_RUN=1 herdr-agent scout "find the relevant files for ..."
+HERDR_AGENT_DRY_RUN=1 HERDR_AGENT_SCOUT_BACKEND=cline herdr-agent scout "find the relevant files for ..."
+HERDR_AGENT_DRY_RUN=1 herdr-agent coder "implement the planned change ..."
+HERDR_AGENT_DRY_RUN=1 herdr-agent auditor "review the current diff ..."
+HERDR_AGENT_DRY_RUN=1 HERDR_AGENT_ADVISOR_THINKING=xhigh herdr-agent advisor "decide the next approach ..."
+```
+
+Validation:
+
+```sh
+sh -n .agents/skills/using-herdr-agents/scripts/herdr-agent \
+  .agents/skills/using-herdr-agents/scripts/herdr-agent-lib \
+  .agents/skills/using-herdr-agents/scripts/herdr-agent-session \
+  .agents/skills/using-herdr-agents/scripts/install \
+  .agents/skills/using-herdr-agents/tests/herdr-agent.sh \
+  tests/herdr-agent.sh
+sh tests/herdr-agent.sh
+```
+
+Real launch examples with explicit context-keyed reuse:
+
+The reusable session name includes the role, repository/worktree key, backend/model, and `HERDR_AGENT_CONTEXT_KEY`.
+Reuse is only automatic when `HERDR_AGENT_CONTEXT_KEY` is set. Without it, `herdr-agent-session` downgrades default `HERDR_AGENT_REUSE=auto` to `never` and starts a fresh `no-context-*` session name.
+By default, `herdr-agent-session` starts each backend in interactive/TUI mode so the pane remains available for follow-up prompts.
+Set `HERDR_AGENT_SESSION_MODE=oneshot` only when you intentionally want the previous non-persistent behavior.
+
+```sh
+HERDR_AGENT_CONTEXT_KEY=herdr-multi-agent herdr-agent-session scout "find the relevant files for ..."
+HERDR_AGENT_CONTEXT_KEY=herdr-multi-agent HERDR_AGENT_SCOUT_BACKEND=cline herdr-agent-session scout "find the relevant files for ..."
+HERDR_AGENT_CONTEXT_KEY=herdr-multi-agent herdr-agent-session coder "implement the planned change ..."
+HERDR_AGENT_CONTEXT_KEY=herdr-multi-agent herdr-agent-session auditor "review the current diff ..."
+HERDR_AGENT_CONTEXT_KEY=herdr-multi-agent HERDR_AGENT_ADVISOR_THINKING=xhigh herdr-agent-session advisor "decide the next approach ..."
+HERDR_AGENT_REUSE=never herdr-agent-session auditor "review this with fresh context ..."
+HERDR_AGENT_SESSION_MODE=oneshot herdr-agent-session scout "run once and close when done ..."
+```
+
+The parent Codex session decides whether worker reports are accepted, rejected, or escalated.

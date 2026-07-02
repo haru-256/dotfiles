@@ -22,6 +22,9 @@
   "diff_view_style": "split",
   "semantic_tokens": "combined",
   "agent_servers": {
+    "cline": {
+      "type": "registry"
+    },
     "opencode": {
       "default_config_options": {
         "effort": "medium",

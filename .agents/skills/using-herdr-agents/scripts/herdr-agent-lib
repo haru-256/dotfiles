@@ -1,0 +1,99 @@
+#!/bin/sh
+
+herdr_agent_usage() {
+  printf '%s\n' "usage: $(basename "$0") <scout|coder|auditor|advisor> <task prompt>" >&2
+}
+
+herdr_agent_validate_role() {
+  case "$1" in
+    scout|coder|auditor|advisor) ;;
+    *)
+      herdr_agent_usage
+      exit 64
+      ;;
+  esac
+}
+
+herdr_agent_repo_root() {
+  if git_root=$(git rev-parse --show-toplevel 2>/dev/null); then
+    printf '%s\n' "$git_root"
+  else
+    pwd -P
+  fi
+}
+
+herdr_agent_sanitize_part() {
+  _ha_val=$(printf '%s' "$1" | tr -c '[:alnum:]_.-' '-')
+  _ha_val=$(printf '%s' "$_ha_val" | sed 's/--*/-/g; s/^-//; s/-$//')
+  if [ -z "$_ha_val" ]; then
+    _ha_val="default"
+  fi
+  printf '%s\n' "$_ha_val"
+  unset _ha_val
+}
+
+herdr_agent_role_config() {
+  role="$1"
+  mode="$2"
+  error_prefix="$3"
+
+  HERDR_AGENT_BACKEND=
+  HERDR_AGENT_MODEL=
+  HERDR_AGENT_OPENCODE_AGENT=
+  HERDR_AGENT_CLINE_PROVIDER=
+  HERDR_AGENT_THINKING=
+
+  case "$role" in
+    scout)
+      HERDR_AGENT_BACKEND="${HERDR_AGENT_SCOUT_BACKEND:-opencode}"
+      case "$HERDR_AGENT_BACKEND" in
+        opencode)
+          HERDR_AGENT_MODEL="${HERDR_AGENT_SCOUT_MODEL:-opencode-go/deepseek-v4-flash}"
+          HERDR_AGENT_OPENCODE_AGENT="scout_v2"
+          ;;
+        cline)
+          HERDR_AGENT_MODEL="${HERDR_AGENT_SCOUT_CLINE_MODEL:-deepseek-v4-flash}"
+          HERDR_AGENT_CLINE_PROVIDER="cline-pass"
+          HERDR_AGENT_THINKING="low"
+          ;;
+        *)
+          printf '%s\n' "$error_prefix: HERDR_AGENT_SCOUT_BACKEND must be opencode or cline: $HERDR_AGENT_BACKEND" >&2
+          exit 65
+          ;;
+      esac
+      ;;
+    coder)
+      HERDR_AGENT_BACKEND="agy"
+      HERDR_AGENT_MODEL="${HERDR_AGENT_CODER_MODEL:-Gemini 3.5 Flash (Medium)}"
+      ;;
+    auditor)
+      HERDR_AGENT_BACKEND="agy"
+      HERDR_AGENT_MODEL="${HERDR_AGENT_AUDITOR_MODEL:-Gemini 3.5 Flash (Medium)}"
+      ;;
+    advisor)
+      HERDR_AGENT_BACKEND="codex"
+      HERDR_AGENT_MODEL="${HERDR_AGENT_ADVISOR_MODEL:-gpt-5.5}"
+      HERDR_AGENT_THINKING="${HERDR_AGENT_ADVISOR_THINKING:-high}"
+      case "$HERDR_AGENT_THINKING" in
+        high|xhigh) ;;
+        *)
+          printf '%s\n' "$error_prefix: advisor thinking must be high or xhigh: $HERDR_AGENT_THINKING" >&2
+          exit 65
+          ;;
+      esac
+      if [ "$mode" = "session" ]; then
+        HERDR_AGENT_MODEL="$HERDR_AGENT_MODEL-$HERDR_AGENT_THINKING"
+      fi
+      ;;
+  esac
+}
+
+herdr_agent_validate_reuse() {
+  case "$1" in
+    auto|never|require) ;;
+    *)
+      printf '%s\n' "$2: HERDR_AGENT_REUSE must be auto, never, or require: $1" >&2
+      exit 65
+      ;;
+  esac
+}

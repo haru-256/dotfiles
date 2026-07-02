@@ -9,6 +9,34 @@
     "general": { "disable": true },
     "explore": { "disable": true },
     "scout": { "disable": true },
+    "scout_v2": {
+      "description": "Herdr v2 read-only scout. Finds relevant files, existing patterns, impact radius, risks, and validation commands. Returns evidence only.",
+      "mode": "all",
+      "model": "opencode-go/deepseek-v4-flash",
+      "temperature": 0.1,
+      "prompt": "{file:~/.config/herdr/agents/scout.md}",
+      "permission": {
+        "edit": "deny",
+        "read": "allow",
+        "bash": {
+          "*": "allow",
+          "rm -rf *": "deny",
+          "sudo *": "ask"
+        },
+        "external_directory": "allow",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "question": "allow",
+        "codesearch": "allow",
+        "skill": "deny",
+        "todowrite": "deny",
+        "grep": "allow",
+        "lsp": "allow",
+        "task": "deny",
+        "glob": "allow",
+        "list": "allow"
+      }
+    },
     "orchestrator": {
       "description": "Primary orchestrator agent. Receives user requests, routes to specialists, writes plans/ADRs/README/docs, adjudicates reviewer findings, and handles failure loops. Does not edit source code or tests.",
       "mode": "primary",

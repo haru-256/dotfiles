@@ -1,0 +1,193 @@
+#!/bin/sh
+set -eu
+
+physical_dirname() {
+  CDPATH= cd -- "$(dirname -- "$1")" && pwd -P
+}
+
+physical_path() {
+  CDPATH= cd -- "$(dirname -- "$1")" && printf '%s/%s\n' "$(pwd -P)" "$(basename -- "$1")"
+}
+
+resolve_path() {
+  target="$1"
+
+  while [ -L "$target" ]; do
+    link_target=$(readlink "$target")
+    case "$link_target" in
+      /*)
+        target="$link_target"
+        ;;
+      *)
+        target=$(physical_dirname "$target")/"$link_target"
+        ;;
+    esac
+  done
+
+  physical_path "$target"
+}
+
+if [ "$#" -lt 2 ]; then
+  printf '%s\n' "usage: $(basename "$0") <scout|coder|auditor|advisor> <task prompt>" >&2
+  exit 64
+fi
+
+script_path=$(resolve_path "$0")
+script_dir=$(physical_dirname "$script_path")
+skill_dir=$(CDPATH= cd -- "$script_dir/.." && pwd -P)
+. "$script_dir/herdr-agent-lib"
+
+role="$1"
+shift
+task_prompt="$*"
+
+herdr_agent_validate_role "$role"
+
+repo_root=$(herdr_agent_repo_root)
+
+prompt_dir="${HERDR_AGENT_PROMPT_DIR:-$skill_dir/prompts}"
+if [ ! -d "$prompt_dir" ]; then
+  prompt_dir="$skill_dir/prompts"
+fi
+
+shared_prompt="$prompt_dir/shared.md"
+role_prompt="$prompt_dir/$role.md"
+
+if [ ! -r "$shared_prompt" ]; then
+  printf '%s\n' "herdr-agent: shared prompt not readable: $shared_prompt" >&2
+  exit 66
+fi
+
+if [ ! -r "$role_prompt" ]; then
+  printf '%s\n' "herdr-agent: role prompt not readable: $role_prompt" >&2
+  exit 66
+fi
+
+herdr_agent_role_config "$role" runner "herdr-agent"
+backend="$HERDR_AGENT_BACKEND"
+model="$HERDR_AGENT_MODEL"
+agent="$HERDR_AGENT_OPENCODE_AGENT"
+provider="$HERDR_AGENT_CLINE_PROVIDER"
+thinking="$HERDR_AGENT_THINKING"
+
+role_system_prompt=$(cat "$shared_prompt"; printf '\n\n'; cat "$role_prompt")
+full_prompt=$(printf '%s\n\n# Repository Root\n\n%s\n\n# Task Brief\n\n%s\n' "$role_system_prompt" "$repo_root" "$task_prompt")
+mode="${HERDR_AGENT_MODE:-oneshot}"
+case "$mode" in
+  oneshot|interactive) ;;
+  *)
+    printf '%s\n' "herdr-agent: HERDR_AGENT_MODE must be oneshot or interactive: $mode" >&2
+    exit 65
+    ;;
+esac
+
+if [ "${HERDR_AGENT_DRY_RUN:-0}" = "1" ]; then
+  printf 'ROLE=%s\n' "$role"
+  printf 'BACKEND=%s\n' "$backend"
+  printf 'MODEL=%s\n' "$model"
+  printf 'MODE=%s\n' "$mode"
+  printf 'REPO_ROOT=%s\n' "$repo_root"
+  printf 'PROMPT_DIR=%s\n' "$prompt_dir"
+  case "$role" in
+    scout)
+      case "$backend" in
+        opencode)
+          printf 'OPENCODE_AGENT=%s\n' "$agent"
+          ;;
+        cline)
+          printf 'CLINE_PROVIDER=%s\n' "$provider"
+          printf 'CLINE_THINKING=%s\n' "$thinking"
+          ;;
+      esac
+      ;;
+    advisor)
+      printf 'THINKING=%s\n' "$thinking"
+      ;;
+  esac
+  printf 'TASK_LENGTH=%s\n' "$(printf '%s' "$task_prompt" | wc -c | tr -d ' ')"
+  exit 0
+fi
+
+case "$backend" in
+  opencode)
+    if ! command -v mise >/dev/null 2>&1; then
+      printf '%s\n' "herdr-agent: mise is required for opencode" >&2
+      exit 127
+    fi
+    if [ "$mode" = "interactive" ]; then
+      exec mise exec -- opencode "$repo_root" \
+        --model "$model" \
+        --agent "$agent" \
+        --mini \
+        --prompt "$full_prompt"
+    fi
+    exec mise exec -- opencode run \
+      --model "$model" \
+      --agent "$agent" \
+      --format default \
+      --dir "$repo_root" \
+      "$full_prompt" < /dev/null
+    ;;
+  cline)
+    if ! command -v mise >/dev/null 2>&1; then
+      printf '%s\n' "herdr-agent: mise is required for cline" >&2
+      exit 127
+    fi
+    exec mise exec -- cline \
+      --provider "$provider" \
+      --model "$model" \
+      --thinking "$thinking" \
+      --cwd "$repo_root" \
+      --system "$role_system_prompt" \
+      "$task_prompt" < /dev/null
+    ;;
+  agy)
+    CDPATH= cd -- "$repo_root"
+    if [ "$mode" = "interactive" ]; then
+      if [ "$role" = "coder" ]; then
+        exec agy \
+          --model "$model" \
+          --new-project \
+          --add-dir "$repo_root" \
+          --dangerously-skip-permissions \
+          --prompt-interactive "$full_prompt"
+      fi
+      exec agy \
+        --model "$model" \
+        --new-project \
+        --add-dir "$repo_root" \
+        --sandbox \
+        --prompt-interactive "$full_prompt"
+    fi
+    if [ "$role" = "coder" ]; then
+      exec agy \
+        --model "$model" \
+        --new-project \
+        --add-dir "$repo_root" \
+        --dangerously-skip-permissions \
+        --print-timeout "${HERDR_AGENT_AGY_TIMEOUT:-10m}" \
+        --print "$full_prompt" < /dev/null
+    fi
+    exec agy \
+      --model "$model" \
+      --new-project \
+      --add-dir "$repo_root" \
+      --sandbox \
+      --print-timeout "${HERDR_AGENT_AGY_TIMEOUT:-10m}" \
+      --print "$full_prompt" < /dev/null
+    ;;
+  codex)
+    if [ "$mode" = "interactive" ]; then
+      exec codex \
+        -m "$model" \
+        -c "model_reasoning_effort=$thinking" \
+        -C "$repo_root" \
+        "$full_prompt"
+    fi
+    exec codex exec \
+      -m "$model" \
+      -c "model_reasoning_effort=$thinking" \
+      -C "$repo_root" \
+      "$full_prompt" < /dev/null
+    ;;
+esac

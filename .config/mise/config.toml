@@ -46,6 +46,8 @@ helix = "latest"
 "npm:cline" = "latest"
 azure-cli = { version = "latest", uvx_args = "--prerelease=allow" }
 tirith = "latest"
+herdr = "latest"
+"npm:agmsg" = "latest"
 
 [settings]
 idiomatic_version_file_enable_tools = []

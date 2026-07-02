@@ -1,5 +1,5 @@
 model = "gpt-5.5"
-model_reasoning_effort = "medium"
+model_reasoning_effort = "xhigh"
 personality = "pragmatic"
 approvals_reviewer = "user"
 web_search = "live"
@@ -39,6 +39,7 @@ hide_rate_limit_model_nudge = true
 "gpt-5.3-codex" = "gpt-5.4"
 
 [features]
+hooks = true
 multi_agent = true
 js_repl = false
 memories = true
@@ -92,12 +93,12 @@ enabled = true
 enabled = true
 
 [marketplaces.openai-bundled]
-last_updated = "2026-06-30T12:19:39Z"
+last_updated = "2026-07-01T09:26:04Z"
 source_type = "local"
 source = "/Users/haru256/.codex/.tmp/bundled-marketplaces/openai-bundled"
 
 [marketplaces.openai-primary-runtime]
-last_updated = "2026-07-01T01:51:09Z"
+last_updated = "2026-07-01T06:51:11Z"
 source_type = "local"
 source = "/Users/haru256/.cache/codex-runtimes/codex-primary-runtime/plugins/openai-primary-runtime"
 
@@ -134,12 +135,12 @@ NODE_REPL_NODE_MODULE_DIRS = "/Applications/Codex.app/Contents/Resources/cua_nod
 NODE_REPL_NODE_PATH = "/Applications/Codex.app/Contents/Resources/cua_node/bin/node"
 NODE_REPL_TRUSTED_CODE_PATHS = "/Users/haru256/.codex"
 CODEX_HOME = "/Users/haru256/.codex"
-NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "d5cbb8ec1ee520cba7943b1e1accb6b25acd9941ea4e2e9e4dbcf25ff9983a2d"
+NODE_REPL_TRUSTED_BROWSER_CLIENT_SHA256S = "cb79053fda6deb0f3b5d6f0d90d4257305ebdbd1e378a12e8fbc5bde782eb59b"
 BROWSER_USE_AVAILABLE_BACKENDS = "chrome,iab"
 NODE_REPL_INSTRUCTIONS_USE_CASE_BROWSER = "Control the in-app browser in conjunction with the Browser Plugin."
 NODE_REPL_INSTRUCTIONS_USE_CASE_CHROME = "Control the Chrome browser in conjunction with the Chrome Plugin. Prefer this method of controlling Chrome over alternatives (such as Computer Use) unless the user explicitly mentions an alternative."
 BROWSER_USE_CODEX_APP_BUILD_FLAVOR = "prod"
-BROWSER_USE_CODEX_APP_VERSION = "26.623.70822"
+BROWSER_USE_CODEX_APP_VERSION = "26.623.81905"
 CODEX_CLI_PATH = "/Applications/Codex.app/Contents/Resources/codex"
 
 [desktop]
@@ -199,3 +200,12 @@ use_memories = true
 [analytics]
 enabled = false
 
+[hooks.state]
+
+[hooks.state."/Users/haru256/.codex/hooks.json:session_start:0:0"]
+trusted_hash = "sha256:74961a1e065b654c08357b413773f1509b98c81843a01c86547c09d161aa9683"
+enabled = true
+
+
+[sandbox_workspace_write]
+writable_roots = ["/Users/haru256/.agents/skills/hoge/db", "/Users/haru256/.agents/skills/hoge/teams", "/Users/haru256/.agents/skills/hoge/run"]
