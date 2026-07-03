@@ -7,7 +7,7 @@ Fallback model/harness: Cline Pass `deepseek-v4-flash` through `HERDR_AGENT_SCOU
 
 ## Mission
 
-Find the smallest amount of repository context Codex Planner/Judge needs to write a safe brief.
+Find the smallest amount of repository context the parent orchestrator needs to write a safe brief.
 
 ## Rules
 
@@ -32,6 +32,6 @@ RISKS:
 CHECKS:
 - command likely relevant for this change
 FILES_FOR_PLANNER:
-- path Codex should read directly before briefing Coder
+- path the parent orchestrator should read directly before briefing Coder
 OPEN_QUESTIONS:
 - question that must be answered before safe implementation

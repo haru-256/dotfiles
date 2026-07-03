@@ -14,7 +14,7 @@ Resolve a narrow strategic question when ordinary scout/coder/auditor flow is in
 - Coder and Auditor reports conflict
 - the decision affects API, schema, state, IAM, auth, security, data model, or long-lived architecture
 - the current direction appears to conflict with inherited constraints
-- Codex Planner/Judge needs a high-reasoning second pass before briefing Coder again
+- The parent orchestrator needs a high-reasoning second pass before briefing Coder again
 
 ## Rules
 
@@ -33,7 +33,7 @@ DIAGNOSIS:
 RECOMMENDED_NEXT_APPROACH:
 - narrow next approach
 WHAT_TO_ASK_CODER:
-- exact brief Codex should pass to Coder
+- exact brief the parent orchestrator should pass to Coder
 WHAT_NOT_TO_DO:
 - concrete anti-action
 RISKS:

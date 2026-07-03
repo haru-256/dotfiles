@@ -1,13 +1,13 @@
 ---
 name: using-herdr-agents
-description: Use when Codex is delegating repository exploration, implementation, review, or advisor work through Herdr-managed external agents
+description: Use when a parent orchestrator is delegating repository exploration, implementation, review, or advisor work through Herdr-managed external agents
 ---
 
 # Using Herdr Agents
 
 ## Overview
 
-Codex stays Planner/Judge. Herdr agents are specialist workers used only when delegation beats doing the work inline.
+The parent orchestrator stays Planner/Judge. Herdr agents are specialist workers used only when delegation beats doing the work inline.
 
 Core rule: Default to one-shot execution. Use a persistent session only when future context is likely valuable.
 
@@ -27,7 +27,7 @@ Or, if the global/home skill symlink already exists, you can run it from anywher
 
 Install only creates/updates symlinks. It does not copy files or edit shell startup files.
 
-Do not delegate when Codex can answer faster by reading a small file, making a trivial local edit, or running a simple check.
+Do not delegate when the parent agent can answer faster by reading a small file, making a trivial local edit, or running a simple check.
 
 ## Command Boundary
 

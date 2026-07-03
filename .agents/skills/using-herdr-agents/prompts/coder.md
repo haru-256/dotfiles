@@ -46,4 +46,4 @@ RISKS:
 FAILURE_SIGNATURE:
 - stable one-line signature when BLOCKED, otherwise `none`
 NEXT_ACTION:
-- recommended next Codex action
+- recommended next parent-orchestrator action

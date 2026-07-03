@@ -81,12 +81,38 @@ assert_contains "$skill_text" "herdr agent list"
 assert_contains "$skill_text" "herdr pane close"
 assert_contains "$skill_text" "./.agents/skills/using-herdr-agents/scripts/install"
 assert_contains "$skill_text" "scripts/install"
-assert_contains "$skill_text" "Do not delegate when Codex can answer faster"
+assert_contains "$skill_text" "Do not delegate when the parent agent can answer faster"
+assert_not_contains "$skill_text" "Codex stays Planner/Judge"
+assert_not_contains "$skill_text" "Codex can answer faster"
 assert_contains "$skill_text" "Operational Contract"
 assert_contains "$skill_text" '`HERDR_AGENT_CONTEXT_KEY` is the explicit contract for reuse'
 assert_contains "$skill_text" "Shared shell helpers live in"
 assert_contains "$skill_text" 'Use the `herdr` skill first when direct Herdr workspace, tab, pane, wait, or low-level agent coordination is needed'
 assert_contains "$skill_text" 'ordinary `herdr-agent` and `herdr-agent-session` usage does not require loading that skill'
+
+shared_prompt_text=$(cat "$PROMPT_DIR/shared.md")
+scout_prompt_text=$(cat "$PROMPT_DIR/scout.md")
+coder_prompt_text=$(cat "$PROMPT_DIR/coder.md")
+advisor_prompt_text=$(cat "$PROMPT_DIR/advisor.md")
+
+assert_contains "$shared_prompt_text" "launched by a parent orchestrator through Herdr"
+assert_contains "$shared_prompt_text" "The parent orchestrator owns planning, final judgment, and user-facing decisions."
+assert_contains "$shared_prompt_text" "The parent orchestrator decides what to do with every report."
+assert_not_contains "$shared_prompt_text" "Codex Planner/Judge"
+assert_not_contains "$shared_prompt_text" "parent Codex session"
+
+assert_contains "$scout_prompt_text" "the parent orchestrator needs to write a safe brief"
+assert_contains "$scout_prompt_text" "path the parent orchestrator should read directly before briefing Coder"
+assert_not_contains "$scout_prompt_text" "Codex Planner/Judge"
+assert_not_contains "$scout_prompt_text" "path Codex should read"
+
+assert_contains "$coder_prompt_text" "recommended next parent-orchestrator action"
+assert_not_contains "$coder_prompt_text" "recommended next Codex action"
+
+assert_contains "$advisor_prompt_text" "The parent orchestrator needs a high-reasoning second pass before briefing Coder again"
+assert_contains "$advisor_prompt_text" "exact brief the parent orchestrator should pass to Coder"
+assert_not_contains "$advisor_prompt_text" "Codex Planner/Judge needs"
+assert_not_contains "$advisor_prompt_text" "exact brief Codex should pass"
 
 scout_output=$(run_dry scout "find files")
 assert_contains "$scout_output" "ROLE=scout"
