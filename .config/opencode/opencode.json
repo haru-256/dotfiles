@@ -106,7 +106,7 @@
     "explorer": {
       "description": "Read-only deep repository exploration subagent. Finds relevant files, dependencies, data/control flow, and likely impact radius. Returns compact reports.",
       "mode": "all",
-      "model": "opencode-go/deepseek-v4-pro",
+      "model": "opencode-go/deepseek-v4-flash",
       "reasoningEffort": "max",
       "temperature": 0.1,
       "prompt": "{file:~/.config/opencode/prompts/explorer.md}",

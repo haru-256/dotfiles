@@ -108,6 +108,41 @@ herdr agent read <agent-name-or-pane-id> --source recent-unwrapped --lines 160 -
 
 If Herdr reports `working` but the pane appears complete, read before assuming it is active.
 
+## Detailed Routing Policy
+
+Always apply these routing rules for Herdr agent delegation:
+
+- **`coder` (Implementation)**: Default for all actual source, test, script, or configuration changes.
+- **`scout` (Discovery)**: Used strictly for discovery when relevant paths, impact radius, or validation commands are unknown. Scout output is evidence, not authority.
+- **Direct Reads**: When decisive files are already known, the orchestrator reads them directly before planning instead of asking scout to summarize.
+- **`auditor` (Review)**: Used as a fresh one-shot execution to review meaningful implementation diffs.
+- **`advisor` (Escalation)**: Used for high-level judgment/escalation only after cheaper evidence has been gathered or when a repeated failure has occurred.
+
+### Routing Matrix
+
+| Flow | Action |
+| --- | --- |
+| Greetings, thanks, meta-questions | Answer directly |
+| Pure repository understanding | Read directly if paths are known, otherwise delegate to `scout` |
+| Code-change workflow | Read/get context -> Write/update plan -> Delegate implementation to `coder` -> Delegate review to fresh `auditor` |
+| Review adjudication | Classify findings (ACCEPT/REJECT/DEFER/NEEDS_CONTEXT/ESCALATE). Send ACCEPT to `coder`, ESCALATE to `advisor` |
+| Planning/design/docs | Handle directly, read files directly if known, otherwise `scout` first |
+
+## Delegation Brief Format
+
+Keep Herdr briefs concise and include only:
+1. Goal
+2. Background / context
+3. Constraints
+4. Relevant paths
+5. Acceptance criteria
+
+For exploration, explicitly say read-only. For implementation, point to the authoritative plan or instructions. For review, request concrete findings with severity, evidence, and recommended action.
+
+## Failure Handling and Escalation
+
+When a specialist reports `BLOCKED`, preserve the failure signature or stable error summary. If the same specialist hits the same failure twice in a row for the same work item, stop retrying and escalate to `advisor` with the failure history.
+
 ## Operational Contract
 
 Prerequisites: `herdr`, `mise`, and the selected backend CLI must be available on `PATH`. OpenCode and Cline are launched through `mise exec --`; Agy and Codex are launched directly.
