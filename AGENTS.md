@@ -25,9 +25,11 @@
 - `.config/fish/config.fish`: fish shell 設定。
 - `.config/nvim/init.lua`: Neovim 設定。
 - `.config/opencode/`: OpenCode 設定、プロンプト、コマンド、プラグイン依存関係。
+- `.cursor/`: Cursor orchestrator / worker（manual rule と subagents）。
 - `.gemini/antigravity-cli/settings.json`: Antigravity CLI 設定。
 - `scripts/`: 補助スクリプト。
   - `scripts/agy-statusline`: Antigravity CLI status line。
+ - `scripts/cursor-statusline`: Cursor CLI status line。
   - `scripts/cline`: Cline 起動用 wrapper。
   - `scripts/git-*`: Git 補助コマンド。
 - `tests/`: shell ベースのテスト。
@@ -60,6 +62,12 @@
   ```sh
   ./tests/agy-statusline.sh
   ```
+
+- Cursor status line を変更した場合:
+
+ ```sh
+ ./tests/cursor-statusline.sh
+ ```
 
 - shell スクリプトを変更した場合:
 

@@ -134,6 +134,64 @@ CLINE_TEAM_NAME=my-task CLINE_THINKING=high cline-team "..."
 
 通常の `cline` は mise などでインストールした実体をそのまま使います。
 
+### Cursor (orchestrator / worker)
+
+強い親モデルが計画・委譲し、`composer-2.5[fast=false]` の worker が実装・調査・検証します。通常作業では rule を付けず、必要なときだけ `@orchestrator-worker` を添付します。
+
+- Rule: [`.cursor/rules/orchestrator-worker.mdc`](.cursor/rules/orchestrator-worker.mdc)（manual only）
+- Workers: [`.cursor/agents/`](.cursor/agents/) — `implementer`, `auditor`, `verifier`
+- Statusline: [`scripts/cursor-statusline`](scripts/cursor-statusline) — Catppuccin Latte palette
+
+Cursor CLI は terminal theme を自動検出するため、`cli-config.json` には native な `catppuccin-latte` theme 設定を持ちません。端末側を Catppuccin Latte にし、必要なら `COLORFGBG="0;15"` で light theme 検出を補助します。statusline は Catppuccin Latte の truecolor 配色を直接出力します。
+
+このリポジトリでは `.cursor/` がそのまま使われます。他プロジェクトでも同じ worker と statusline を使う場合は user-level に symlink します。
+`cursor-statusline` は `jq` と `git` を使います。clone 先が `~/dotfiles` でない場合は、以下の symlink 元パスを実際のパスに置き換えてください。
+
+```sh
+mkdir -p ~/.cursor/agents ~/.cursor/rules
+ln -s ~/dotfiles/.cursor/agents/implementer.md ~/.cursor/agents/implementer.md
+ln -s ~/dotfiles/.cursor/agents/auditor.md ~/.cursor/agents/auditor.md
+ln -s ~/dotfiles/.cursor/agents/verifier.md ~/.cursor/agents/verifier.md
+ln -s ~/dotfiles/.cursor/rules/orchestrator-worker.mdc ~/.cursor/rules/orchestrator-worker.mdc
+ln -s ~/dotfiles/scripts/cursor-statusline ~/.cursor/statusline.sh
+chmod +x ~/dotfiles/scripts/cursor-statusline
+```
+
+`~/.cursor/cli-config.json` は auth/cache/model picker 状態も含むため、ファイル全体は dotfiles 管理しません。coding 用の推奨値だけを既存 JSON に追加します。
+
+```json
+{
+  "approvalMode": "auto-review",
+  "notifications": true,
+  "hints": true,
+  "rewind": true,
+  "suggestNextPrompt": false,
+  "display": {
+    "showLineNumbers": true,
+    "showThinkingBlocks": true,
+    "showStatusIndicators": true,
+    "showStatusLineRunningTime": false
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "~/.cursor/statusline.sh",
+    "padding": 1,
+    "updateIntervalMs": 500,
+    "timeoutMs": 1000
+  }
+}
+```
+
+使い方:
+
+1. Agent chat（IDE または Cursor CLI）で親モデルを選ぶ
+2. `@orchestrator-worker` とタスクを書く
+3. 親が plan → `implementer` が実装 → 必要なら `verifier` が確認
+
+```text
+@orchestrator-worker Refactor the auth module.
+```
+
 ### Antigravity CLI
 
 ```sh

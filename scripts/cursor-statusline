@@ -1,0 +1,136 @@
+#!/bin/sh
+
+# Render the Cursor CLI status line from its JSON input.
+blue='\033[38;2;30;102;229m'
+green='\033[38;2;64;160;43m'
+lavender='\033[38;2;114;135;253m'
+mauve='\033[38;2;136;57;239m'
+peach='\033[38;2;254;100;11m'
+red='\033[38;2;210;15;57m'
+subtext='\033[38;2;108;111;133m'
+teal='\033[38;2;23;146;153m'
+yellow='\033[38;2;223;142;29m'
+reset='\033[0m'
+
+print_error() {
+  printf '%b● cursor statusline error%b\n' "$red" "$reset"
+}
+
+data=$(jq -r '
+  def value($path): try getpath($path) catch null;
+  def text_or_empty:
+    if type == "string" then gsub("[\u0000-\u001f\u007f-\u009f]"; "") else "" end;
+
+  (value(["render_width_chars"]) | if type == "number" then floor else 0 end) as $width |
+  (value(["workspace", "current_dir"]) | text_or_empty) as $workspace_dir |
+  (value(["cwd"]) | text_or_empty) as $cwd |
+  (if $workspace_dir != "" then $workspace_dir else $cwd end) as $dir |
+  (value(["model", "display_name"]) | text_or_empty) as $display_name |
+  (value(["model", "id"]) | text_or_empty) as $model_id |
+  (value(["model", "param_summary"]) | text_or_empty) as $params |
+  (if $display_name != "" then $display_name
+   elif $model_id != "" then $model_id
+   else "unknown"
+   end) as $model |
+  (value(["context_window", "used_percentage"])) as $usage |
+  (if $usage | type == "number" then
+      ($usage | round | if . < 0 then 0 elif . > 100 then 100 else . end | tostring)
+   else "?"
+   end) as $context |
+  (value(["vim", "mode"]) | text_or_empty) as $vim_mode |
+  (value(["worktree", "name"]) | text_or_empty) as $worktree |
+  (value(["output_style", "name"]) | text_or_empty) as $style |
+  (value(["autorun"]) | if . == true then "autorun" else "" end) as $autorun |
+  (value(["version"]) | text_or_empty) as $version |
+  [$width, $dir, $model, $params, $context, $vim_mode, $worktree, $style, $autorun, $version] | @sh
+' 2>/dev/null) || {
+  print_error
+  exit 0
+}
+
+eval "set -- $data"
+width=$1
+dir=$2
+model=$3
+params=$4
+context=$5
+vim_mode=$6
+worktree=$7
+style=$8
+autorun=$9
+version=${10}
+
+dir_label=${dir##*/}
+if [ -n "$worktree" ]; then
+  dir_label=$worktree
+fi
+if [ -z "$dir_label" ]; then
+  dir_label=.
+fi
+
+branch=
+dirty=0
+if [ -n "$dir" ] && git -C "$dir" rev-parse --git-dir >/dev/null 2>&1; then
+  branch=$(git -C "$dir" branch --show-current 2>/dev/null || true)
+  if [ -z "$branch" ]; then
+    branch=$(git -C "$dir" rev-parse --short HEAD 2>/dev/null || true)
+  fi
+  dirty=$(git -C "$dir" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+fi
+
+printf '%b%s%b' "$blue" "$model" "$reset"
+if [ -n "$params" ]; then
+  printf ' %b%s%b' "$subtext" "$params" "$reset"
+fi
+
+if [ "$width" -ge 60 ]; then
+  printf ' %b|%b %b%s%b' "$subtext" "$reset" "$teal" "$dir_label" "$reset"
+fi
+
+if [ "$width" -ge 70 ] && [ -n "$branch" ]; then
+  if [ "$dirty" -gt 0 ]; then
+    printf ' %b|%b %b%s +%s%b' "$subtext" "$reset" "$yellow" "$branch" "$dirty" "$reset"
+  else
+    printf ' %b|%b %b%s clean%b' "$subtext" "$reset" "$green" "$branch" "$reset"
+  fi
+fi
+
+if [ "$context" = "?" ]; then
+  printf ' %b|%b %bctx ?%b' "$subtext" "$reset" "$mauve" "$reset"
+else
+  filled=$(((context + 5) / 10))
+  empty=$((10 - filled))
+  bar=
+  i=0
+  while [ "$i" -lt "$filled" ]; do
+    bar="${bar}█"
+    i=$((i + 1))
+  done
+  i=0
+  while [ "$i" -lt "$empty" ]; do
+    bar="${bar}░"
+    i=$((i + 1))
+  done
+  printf ' %b|%b %bctx [%s] %s%%%b' "$subtext" "$reset" "$mauve" "$bar" "$context" "$reset"
+fi
+
+if [ "$width" -ge 90 ] && [ -n "$vim_mode" ]; then
+  case $vim_mode in
+    NORMAL) printf ' %b|%b %b%s%b' "$subtext" "$reset" "$peach" "$vim_mode" "$reset" ;;
+    *) printf ' %b|%b %b%s%b' "$subtext" "$reset" "$green" "$vim_mode" "$reset" ;;
+  esac
+fi
+
+if [ "$width" -ge 110 ] && [ -n "$style" ] && [ "$style" != "default" ]; then
+  printf ' %b|%b %bstyle %s%b' "$subtext" "$reset" "$lavender" "$style" "$reset"
+fi
+
+if [ "$width" -ge 120 ] && [ -n "$autorun" ]; then
+  printf ' %b|%b %b%s%b' "$subtext" "$reset" "$red" "$autorun" "$reset"
+fi
+
+if [ "$width" -ge 130 ] && [ -n "$version" ]; then
+  printf ' %b|%b %bv%s%b' "$subtext" "$reset" "$subtext" "$version" "$reset"
+fi
+
+printf '\n'
