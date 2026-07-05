@@ -209,6 +209,8 @@ chmod +x "$(pwd)/scripts/agy-statusline"
 ### Herdr Multi-Agent System
 
 Codex remains Planner/Judge. Herdr launches specialist worker panes only when useful.
+In Codex, the `using-herdr-agents` skill is loaded only when the user explicitly names that skill.
+Ordinary investigation, implementation, or review requests stay in the parent session unless the user opts into this mode.
 
 | Role | Harness | Model | Use |
 | --- | --- | --- | --- |

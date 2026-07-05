@@ -1,6 +1,6 @@
 ---
 name: using-herdr-agents
-description: Use when a parent orchestrator is delegating repository exploration, implementation, review, or advisor work through Herdr-managed external agents
+description: Use when the user explicitly names the `using-herdr-agents` skill
 ---
 
 # Using Herdr Agents
@@ -8,6 +8,11 @@ description: Use when a parent orchestrator is delegating repository exploration
 ## Overview
 
 The parent orchestrator stays Planner/Judge. Herdr agents are specialist workers used only when delegation beats doing the work inline.
+
+Activation gate: use this skill only when the user explicitly names the `using-herdr-agents` skill.
+Do not use this skill merely because a task could be delegated, because the user asks for exploration, implementation, review, or because Herdr would be a plausible tool.
+
+When the skill was not explicitly requested, handle the request directly or use the ordinary skills/tools that match the task.
 
 Core rule: Default to one-shot execution. Use a persistent session only when future context is likely valuable.
 

@@ -73,6 +73,9 @@ done
 
 skill_text=$(cat "$SKILL_FILE")
 assert_contains "$skill_text" "name: using-herdr-agents"
+assert_contains "$skill_text" 'description: Use when the user explicitly names the `using-herdr-agents` skill'
+assert_contains "$skill_text" "Do not use this skill merely because a task could be delegated"
+assert_contains "$skill_text" "When the skill was not explicitly requested"
 assert_contains "$skill_text" "Default to one-shot"
 assert_contains "$skill_text" "Use a persistent session"
 assert_contains "$skill_text" "Reuse only when"
