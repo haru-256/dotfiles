@@ -9,7 +9,7 @@ Activate only when this rule is attached.
 ## Models
 
 - **Orchestrator (parent):** your strong model in the picker (e.g. `claude-opus-4-8-thinking-high`)
-- **Workers:** `composer-2.5[fast=false]` – pinned in `.cursor/agents/`
+- **Workers:** `composer-2.5[fast=false]` – pinned in `~/.cursor/agents/`
 
 ## Parent
 
