@@ -1,0 +1,155 @@
+#!/bin/sh
+
+# Render the Claude Code statusline from its JSON input.
+blue='\033[38;2;30;102;229m'
+green='\033[38;2;64;160;43m'
+lavender='\033[38;2;114;135;253m'
+mauve='\033[38;2;136;57;239m'
+peach='\033[38;2;254;100;11m'
+red='\033[38;2;210;15;57m'
+subtext='\033[38;2;108;111;133m'
+teal='\033[38;2;23;146;153m'
+yellow='\033[38;2;223;142;29m'
+reset='\033[0m'
+
+print_error() {
+  printf '%b● claude statusline error%b\n' "$red" "$reset"
+}
+
+data=$(jq -r '
+  def value($path): try getpath($path) catch null;
+  def text_or_empty:
+    if type == "string" then gsub("[\u0000-\u001f\u007f-\u009f]"; "") else "" end;
+
+  (value(["workspace", "current_dir"]) | text_or_empty) as $current_dir |
+  (value(["workspace", "project_dir"]) | text_or_empty) as $project_dir |
+  (if $current_dir != "" then $current_dir else $project_dir end) as $dir |
+  (value(["workspace", "git_worktree"]) | text_or_empty) as $worktree |
+  (value(["model", "display_name"]) | text_or_empty) as $display_name |
+  (value(["model", "id"]) | text_or_empty) as $model_id |
+  (if $display_name != "" then $display_name
+   elif $model_id != "" then $model_id
+   else "unknown"
+   end) as $model |
+  (value(["context_window", "used_percentage"])) as $usage |
+  (if $usage | type == "number" then
+      ($usage | round | if . < 0 then 0 elif . > 100 then 100 else . end | tostring)
+   else "?"
+   end) as $context |
+  (value(["cost", "total_cost_usd"])) as $cost_raw |
+  (value(["cost", "total_duration_ms"])) as $duration_raw |
+  (($cost_raw | type == "number") and ($duration_raw | type == "number")) as $has_cost |
+  (if $has_cost then ($cost_raw | tostring) else "" end) as $cost_usd |
+  (if $has_cost then ($duration_raw / 60000 | floor | tostring) else "" end) as $duration_min |
+  (value(["effort", "level"]) | text_or_empty) as $effort |
+  (value(["rate_limits", "five_hour", "used_percentage"])) as $five_raw |
+  (value(["rate_limits", "seven_day", "used_percentage"])) as $seven_raw |
+  ($five_raw | if type == "number" then . else null end) as $five |
+  ($seven_raw | if type == "number" then . else null end) as $seven |
+  (if $five != null and $seven != null then
+     (if $five >= $seven then "5h" else "7d" end)
+   elif $five != null then "5h"
+   elif $seven != null then "7d"
+   else "" end) as $rl_label |
+  (if $five != null and $seven != null then
+     (if $five >= $seven then $five else $seven end)
+   elif $five != null then $five
+   elif $seven != null then $seven
+   else null end) as $rl_value |
+  ($rl_value | if . == null then "" else
+     (round | if . < 0 then 0 elif . > 100 then 100 else . end | tostring)
+   end) as $rl_pct |
+  [$model, $dir, $worktree, $context, $cost_usd, $duration_min, $effort, $rl_label, $rl_pct] | @sh
+' 2>/dev/null) || {
+  print_error
+  exit 0
+}
+
+eval "set -- $data"
+model=$1
+dir=$2
+worktree=$3
+context=$4
+cost_usd=$5
+duration_min=$6
+effort=$7
+rl_label=$8
+rl_pct=$9
+
+width=${COLUMNS:-80}
+case $width in
+  ''|*[!0-9]*) width=80 ;;
+esac
+
+dir_label=${dir##*/}
+if [ -n "$worktree" ]; then
+  dir_label=$worktree
+fi
+if [ -z "$dir_label" ]; then
+  dir_label=.
+fi
+
+branch=
+dirty=0
+if [ -n "$dir" ] && git -C "$dir" rev-parse --git-dir >/dev/null 2>&1; then
+  branch=$(git -C "$dir" branch --show-current 2>/dev/null || true)
+  if [ -z "$branch" ]; then
+    branch=$(git -C "$dir" rev-parse --short HEAD 2>/dev/null || true)
+  fi
+  dirty=$(git -C "$dir" status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+fi
+
+printf '%b%s%b' "$blue" "$model" "$reset"
+
+if [ "$width" -ge 60 ]; then
+  printf ' %b|%b %b%s%b' "$subtext" "$reset" "$teal" "$dir_label" "$reset"
+fi
+
+if [ "$width" -ge 70 ] && [ -n "$branch" ]; then
+  if [ "$dirty" -gt 0 ]; then
+    printf ' %b|%b %b%s +%s%b' "$subtext" "$reset" "$yellow" "$branch" "$dirty" "$reset"
+  else
+    printf ' %b|%b %b%s clean%b' "$subtext" "$reset" "$green" "$branch" "$reset"
+  fi
+fi
+
+if [ "$context" = "?" ]; then
+  printf ' %b|%b %bctx ?%b' "$subtext" "$reset" "$mauve" "$reset"
+else
+  filled=$(((context + 5) / 10))
+  empty=$((10 - filled))
+  bar=
+  i=0
+  while [ "$i" -lt "$filled" ]; do
+    bar="${bar}█"
+    i=$((i + 1))
+  done
+  i=0
+  while [ "$i" -lt "$empty" ]; do
+    bar="${bar}░"
+    i=$((i + 1))
+  done
+  printf ' %b|%b %bctx [%s] %s%%%b' "$subtext" "$reset" "$mauve" "$bar" "$context" "$reset"
+fi
+
+if [ "$width" -ge 90 ] && [ -n "$cost_usd" ] && [ -n "$duration_min" ]; then
+  cost_fmt=$(printf '%.2f' "$cost_usd")
+  printf ' %b|%b %b$%s %sm%b' "$subtext" "$reset" "$peach" "$cost_fmt" "$duration_min" "$reset"
+fi
+
+if [ "$width" -ge 100 ] && [ -n "$effort" ]; then
+  printf ' %b|%b %beffort %s%b' "$subtext" "$reset" "$lavender" "$effort" "$reset"
+fi
+
+if [ "$width" -ge 110 ] && [ -n "$rl_label" ]; then
+  if [ "$rl_pct" -ge 90 ]; then
+    rl_color=$red
+  elif [ "$rl_pct" -ge 70 ]; then
+    rl_color=$yellow
+  else
+    rl_color=$green
+  fi
+  printf ' %b|%b %b%s %s%%%b' "$subtext" "$reset" "$rl_color" "$rl_label" "$rl_pct" "$reset"
+fi
+
+printf '\n'
