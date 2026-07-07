@@ -206,6 +206,27 @@ chmod +x "$(pwd)/scripts/agy-statusline"
 
 `statusLine.command` は `~/.gemini/antigravity-cli/statusline.sh` を参照します。リポジトリのクローン先が変わった場合は、このシンボリックリンクを張り直してください。
 
+### Claude Code
+
+```sh
+ln -s ~/dotfiles/scripts/claude-statusline ~/.claude/statusline.sh
+chmod +x ~/dotfiles/scripts/claude-statusline
+```
+
+`~/.claude/settings.json` はテーマや `hooks` など個人設定を含むため、ファイル全体は dotfiles 管理しません。既存ファイルへ次のブロックを追記します。
+
+```json
+{
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/statusline.sh",
+    "padding": 2
+  }
+}
+```
+
+`claude-statusline` は `jq` と `git` を使います。clone 先が `~/dotfiles` でない場合は、symlink 元パスを実際のパスに置き換えてください。
+
 ### Herdr Multi-Agent System
 
 Codex remains Planner/Judge. Herdr launches specialist worker panes only when useful.
