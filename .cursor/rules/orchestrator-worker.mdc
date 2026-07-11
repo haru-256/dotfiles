@@ -1,5 +1,6 @@
 ---
 description: Strong model orchestrates; Grok 4.5 implementer and Composer 2.5 auditor/verifier do scoped work. Apply manually with @orchestrator-worker.
+alwaysApply: false
 ---
 
 # Orchestrator / worker mode
