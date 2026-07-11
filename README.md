@@ -136,7 +136,7 @@ CLINE_TEAM_NAME=my-task CLINE_THINKING=high cline-team "..."
 
 ### Cursor (orchestrator / worker)
 
-強い親モデルが計画・委譲し、`composer-2.5[fast=false]` の worker が実装・調査・検証します。通常作業では rule を付けず、必要なときだけ `@orchestrator-worker` を添付します。
+強い親モデルが計画・委譲し、worker が実装・調査・検証します。`implementer` は `grok-4.5[fast=false]`、`auditor` / `verifier` は `composer-2.5[fast=false]` です。通常作業では rule を付けず、必要なときだけ `@orchestrator-worker` を添付します。
 
 - Rule: [`.cursor/rules/orchestrator-worker.mdc`](.cursor/rules/orchestrator-worker.mdc)（manual only）
 - Workers: `~/.cursor/agents/` — `implementer`, `auditor`, `verifier`（dotfiles の [`.cursor/agents/`](.cursor/agents/) から symlink）

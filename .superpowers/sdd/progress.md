@@ -1,16 +1,13 @@
-# SDD Progress: Herdr Agents Skill Package
+# SDD Progress: Claude Code statusline
 
-Plan: docs/superpowers/plans/2026-07-02-herdr-agents-skill.md
+Plan: docs/superpowers/plans/2026-07-07-claude-statusline.md
+Branch: claude-statusline (no worktree — user declined isolation, feature branch used instead of main)
 
-- [x] Task 1: Add Package-Local Test Harness
-- [x] Task 2: Move Prompts and Scripts into the Skill Package
-- [x] Task 3: Create the Skill Guidance and Install Script
-- [x] Task 4: Install Symlinks and Remove Old Runtime Paths
-- [x] Task 5: Update Documentation
-- [x] Task 6: Pressure-Test the Skill Package
+- [x] Task 1: claude-statusline script + test (commits 9ece578..1963a22, review clean)
+- [x] Task 2: README documentation (commits 1963a22..e26d4cc, review clean)
+- [x] Task 3: Configure the user's machine (live changes outside repo, no commit; review clean)
+
+Final whole-branch review: clean, "Ready to merge: Yes" (only cosmetic minors, no fixes required).
 
 Notes:
-- Implemented by subagent 019f2039-b097-7131-86ae-ac34cb9d2c61 with a follow-up installer safety fix in the parent session.
-- Installer replaces empty target directories with symlinks and rejects non-empty target directories.
-- Pressure scenario evaluator 019f2041-ee0a-7613-a434-384b9b2e5ecd passed all one-shot/session/reuse/cleanup scenarios.
-- Review findings from 019f2042-1087-7ae0-9a1f-43e2cf4abf5c were fixed by 019f2044-a520-7811-9ab6-b41827f5f3c1.
+- Previous ledger entry (Herdr agents skill package, docs/superpowers/plans/2026-07-02-herdr-agents-skill.md) fully completed; replaced here for the new plan.

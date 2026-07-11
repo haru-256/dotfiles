@@ -7,6 +7,8 @@ SCRIPT="$SKILL_DIR/scripts/herdr-agent"
 SESSION_SCRIPT="$SKILL_DIR/scripts/herdr-agent-session"
 INSTALL_SCRIPT="$SKILL_DIR/scripts/install"
 LIB_SCRIPT="$SKILL_DIR/scripts/herdr-agent-lib"
+AGY_RUN_SCRIPT="$SKILL_DIR/scripts/herdr-agent-agy-run"
+DOCTOR_SCRIPT="$SKILL_DIR/scripts/herdr-agent-doctor"
 PROMPT_DIR="$SKILL_DIR/prompts"
 SKILL_FILE="$SKILL_DIR/SKILL.md"
 TMP_DIR=$(mktemp -d "${TMPDIR:-/tmp}/herdr-agent-test.XXXXXX")
@@ -53,7 +55,7 @@ assert_fails_with() {
   fi
 }
 
-for script in "$SCRIPT" "$SESSION_SCRIPT" "$INSTALL_SCRIPT" "$LIB_SCRIPT" "$0"
+for script in "$SCRIPT" "$SESSION_SCRIPT" "$INSTALL_SCRIPT" "$LIB_SCRIPT" "$AGY_RUN_SCRIPT" "$DOCTOR_SCRIPT" "$0"
 do
   if ! sh -n "$script"; then
     printf '%s\n' "syntax validation failed for: $script" >&2
@@ -62,6 +64,7 @@ do
 done
 
 for file in "$SKILL_FILE" "$SCRIPT" "$SESSION_SCRIPT" "$INSTALL_SCRIPT" "$LIB_SCRIPT" \
+  "$AGY_RUN_SCRIPT" "$DOCTOR_SCRIPT" \
   "$PROMPT_DIR/shared.md" "$PROMPT_DIR/scout.md" "$PROMPT_DIR/coder.md" \
   "$PROMPT_DIR/auditor.md" "$PROMPT_DIR/advisor.md"
 do
@@ -185,6 +188,32 @@ assert_contains "$auditor_output" "ROLE=auditor"
 assert_contains "$auditor_output" "BACKEND=agy"
 assert_contains "$auditor_output" "MODEL=Gemini 3.5 Flash (Medium)"
 
+printf '%s\n' "prompt body" >"$TMP_DIR/prompt.md"
+
+agy_coder_dry_output=$(
+  HERDR_AGENT_AGY_RUN_DRY_RUN=1 "$AGY_RUN_SCRIPT" coder oneshot "Gemini 3.5 Flash (Medium)" "$ROOT_DIR" "$TMP_DIR/prompt.md"
+)
+assert_contains "$agy_coder_dry_output" "ROLE=coder"
+assert_contains "$agy_coder_dry_output" "MODE=oneshot"
+assert_contains "$agy_coder_dry_output" "PERMISSION=dangerously-skip-permissions"
+assert_contains "$agy_coder_dry_output" "PROMPT_FILE=$TMP_DIR/prompt.md"
+
+agy_auditor_dry_output=$(
+  HERDR_AGENT_AGY_RUN_DRY_RUN=1 "$AGY_RUN_SCRIPT" auditor interactive "Gemini 3.5 Flash (Medium)" "$ROOT_DIR" "$TMP_DIR/prompt.md"
+)
+assert_contains "$agy_auditor_dry_output" "ROLE=auditor"
+assert_contains "$agy_auditor_dry_output" "MODE=interactive"
+assert_contains "$agy_auditor_dry_output" "PERMISSION=sandbox"
+
+assert_fails_with "herdr-agent-agy-run: role must be coder or auditor" \
+  "$AGY_RUN_SCRIPT" scout oneshot "Gemini 3.5 Flash (Medium)" "$ROOT_DIR" "$TMP_DIR/prompt.md"
+
+assert_fails_with "herdr-agent-agy-run: mode must be oneshot or interactive" \
+  "$AGY_RUN_SCRIPT" coder bad "Gemini 3.5 Flash (Medium)" "$ROOT_DIR" "$TMP_DIR/prompt.md"
+
+assert_fails_with "herdr-agent-agy-run: prompt file not readable" \
+  "$AGY_RUN_SCRIPT" coder oneshot "Gemini 3.5 Flash (Medium)" "$ROOT_DIR" "$TMP_DIR/missing.md"
+
 advisor_output=$(
   HERDR_AGENT_DRY_RUN=1 HERDR_AGENT_PROMPT_DIR="$PROMPT_DIR" HERDR_AGENT_ADVISOR_THINKING=xhigh \
     "$SCRIPT" advisor "decide"
@@ -276,6 +305,7 @@ install_output=$(
 )
 assert_contains "$install_output" "$TMP_DIR/bin/herdr-agent -> $SKILL_DIR/scripts/herdr-agent"
 assert_contains "$install_output" "$TMP_DIR/bin/herdr-agent-session -> $SKILL_DIR/scripts/herdr-agent-session"
+assert_contains "$install_output" "$TMP_DIR/bin/herdr-agent-doctor -> $SKILL_DIR/scripts/herdr-agent-doctor"
 assert_contains "$install_output" "$TMP_DIR/config/herdr/agents -> $SKILL_DIR/prompts"
 assert_contains "$install_output" "$TMP_DIR/skills/using-herdr-agents -> $SKILL_DIR"
 
@@ -294,6 +324,10 @@ installed_session_output=$(
     HERDR_AGENT_REUSE=never "$TMP_DIR/installed/bin/herdr-agent-session" scout "find files"
 )
 assert_contains "$installed_session_output" "RUNNER=$SKILL_DIR/scripts/herdr-agent"
+if [ "$(readlink "$TMP_DIR/installed/bin/herdr-agent-doctor")" != "$SKILL_DIR/scripts/herdr-agent-doctor" ]; then
+  printf '%s\n' "install did not create the herdr-agent-doctor symlink" >&2
+  exit 1
+fi
 
 mkdir -p "$TMP_DIR/existing-empty/herdr/agents"
 HERDR_AGENT_INSTALL_PREFIX="$TMP_DIR/existing-empty/bin" \
@@ -319,5 +353,19 @@ if ! grep -F "target exists and is not an empty directory or symlink" "$TMP_DIR/
   cat "$TMP_DIR/install.err" >&2
   exit 1
 fi
+
+doctor_output=$(
+  HERDR_AGENT_DOCTOR_DRY_RUN=1 \
+    HERDR_AGENT_DOCTOR_HOME="$TMP_DIR/doctor-home" \
+    HERDR_AGENT_DOCTOR_PATH="$TMP_DIR/installed/bin:$PATH" \
+    "$DOCTOR_SCRIPT"
+)
+assert_contains "$doctor_output" "OK package file: scripts/herdr-agent"
+assert_contains "$doctor_output" "OK package file: scripts/herdr-agent-agy-run"
+assert_contains "$doctor_output" "OK package file: scripts/herdr-agent-doctor"
+assert_contains "$doctor_output" "OK prompt file: prompts/shared.md"
+assert_contains "$doctor_output" "WARN symlink not installed: herdr-agent"
+assert_contains "$doctor_output" "WARN runtime command not checked in dry-run: agy"
+assert_contains "$doctor_output" "SUMMARY:"
 
 printf '%s\n' "PASS: using-herdr-agents"
