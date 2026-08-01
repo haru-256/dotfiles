@@ -5,15 +5,21 @@ set -o pipefail
 
 # 1. ステージング確認
 if git diff --cached --quiet; then
-    echo "🚫 ステージングされた変更がありません。"
-    exit 1
+  echo "🚫 ステージングされた変更がありません。"
+  exit 1
 fi
 
 echo "🤖 AIがコミットメッセージを生成中..."
 
 # 2. プロンプト設定
-PROMPT="以下のgit diffから、Conventional Commitsに従ったコミットメッセージを作成してください。タイトルと箇条書きの本文を含め、Markdownのコードブロック(backticks)は含めず、プレーンテキストのみで出力してください。"
+# agy -p は stdin を読まないため、diff はプロンプト文字列に直接埋め込む
+DIFF="$(git diff --cached)"
+PROMPT="以下のgit diffから、Conventional Commitsに従ったコミットメッセージを作成してください。タイトルと箇条書きの本文を含め、Markdownのコードブロック(backticks)は含めず、プレーンテキストのみで出力してください。
+
+${DIFF}"
 
 # 3. 実行
-git diff --cached | agy --dangerously-skip-permissions -p "$PROMPT" | git commit -e -F -
-
+agy --dangerously-skip-permissions \
+    --model gemini-3.6-flash-medium \
+    -p "$PROMPT" \
+  | git commit -e -F -

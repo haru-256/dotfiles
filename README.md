@@ -45,8 +45,8 @@ This repository serves as a collection of configuration files that I use to pers
 ### Herdr
 
 - **Herdr Configuration**: [`.config/herdr/config.toml`](.config/herdr/config.toml)
-- **Herdr Agent Package**: [`.agents/skills/using-herdr-agents`](.agents/skills/using-herdr-agents)
-- **Herdr Agent Prompts**: [`.agents/skills/using-herdr-agents/prompts`](.agents/skills/using-herdr-agents/prompts)
+- **Herdr Orchestration Package**: [`.agents/skills/orchestrating-herdr-workers`](.agents/skills/orchestrating-herdr-workers)
+- **Herdr Worker Prompts**: [`.agents/skills/orchestrating-herdr-workers/prompts`](.agents/skills/orchestrating-herdr-workers/prompts)
 
 ## Themes and Plugins
 
@@ -75,7 +75,8 @@ ln -s ~/dotfiles/.config/nvim/lua ~/.config/nvim/lua
 ln -s ~/dotfiles/vscode/keybindings.json ~/.config/Code/User/keybindings.json
 mkdir -p ~/.config/herdr
 ln -s ~/dotfiles/.config/herdr/config.toml ~/.config/herdr/config.toml
-~/dotfiles/.agents/skills/using-herdr-agents/scripts/install
+npx skills add herdrdev/herdr --skill herdr -g -a codex -a claude-code -y
+~/dotfiles/.agents/skills/orchestrating-herdr-workers/scripts/install
 ```
 
 ### OpenCode
@@ -229,68 +230,54 @@ chmod +x ~/dotfiles/scripts/claude-statusline
 
 ### Herdr Multi-Agent System
 
-Codex remains Planner/Judge. Herdr launches specialist worker panes only when useful.
-In Codex, the `using-herdr-agents` skill is loaded only when the user explicitly names that skill.
-Ordinary investigation, implementation, or review requests stay in the parent session unless the user opts into this mode.
+Codex or Claude acts as the opt-in Orchestrator. It owns planning, user approval, worker control, review adjudication, and task cleanup while Herdr keeps every worker pane visible for intervention.
 
 | Role | Harness | Model | Use |
 | --- | --- | --- | --- |
-| Scout | OpenCode Go by default, Cline Pass fallback | `opencode-go/deepseek-v4-flash` or `deepseek-v4-flash` | read-only repository exploration |
-| Coder | Agy | `Gemini 3.5 Flash (Medium)` | scoped implementation and validation |
-| Auditor | Agy | `Gemini 3.5 Flash (Medium)` | read-only diff or artifact review |
-| Advisor | Codex | `gpt-5.5` with `high` or `xhigh` reasoning | rare failure-loop or architecture judgment |
+| Explorer | Cursor Agent, OpenCode fallback | `composer-2.5` | fresh read-only repository evidence |
+| Implementer | Cursor Agent, OpenCode fallback | `cursor-grok-4.5-high` | approved-plan implementation and validation |
+| Reviewer | Cursor Agent, OpenCode fallback | `composer-2.5` | fresh read-only diff and test review |
 
-The Herdr agent package lives at `.agents/skills/using-herdr-agents`.
-It owns the skill guidance, prompts, scripts, install script, and package-local tests.
+Install the official `herdr` skill into Codex and Claude with `npx skills`, then run the repository installer for the Orchestrator skill, agent definitions, and `herdr-worker` command:
 
-`herdr-agent` is the one-shot runner used for direct execution and routing checks.
-`herdr-agent-session` is the Herdr launcher for retained context. Use it only when follow-up or startup-overhead savings are worth the context-contamination risk.
+```sh
+npx skills add herdrdev/herdr --skill herdr -g -a codex -a claude-code -y
+./.agents/skills/orchestrating-herdr-workers/scripts/install
+```
 
 Operational contract:
 
-- Prerequisites: `herdr`, `mise`, and the selected backend CLI are available on `PATH`.
-- OpenCode and Cline are launched through `mise exec --`; Agy and Codex are launched directly.
-- `scripts/install` only creates or updates symlinks for the package commands, prompts, and skill. It does not copy files or edit shell startup files.
-- The root `tests/herdr-agent.sh` wrapper is the repo-level validation entrypoint.
+- The Orchestrator must receive explicit plan approval before starting Implementer.
+- Task tabs are created and managed by the human. The worker skill never creates, renames, or closes a tab.
+- Workers open as sibling panes in the current tab without stealing focus. A sufficiently wide pane splits right; a narrow or tall pane splits down.
+- Explorer and Reviewer are fresh one-shot panes. Implementer is retained only through the same task's review/fix loop.
+- Successful one-shot panes close after their report is captured. The Orchestrator closes the retained Implementer pane at task completion.
+- Blocked, crashed, timed-out, or ambiguous panes stay open for diagnosis.
+- After capturing evidence and deciding to discard a failed worker, close that pane explicitly with `herdr pane close <pane-id>`; `herdr-worker close` intentionally ignores failed panes.
+- Cursor Agent is primary. OpenCode is attempted once only before Cursor launches: when the command is missing, status/authentication preflight fails normally, or the configured model is unavailable. Signal-derived preflight exits and every post-launch Cursor failure are returned without fallback.
+- OpenCode Explorer and Reviewer deny Bash as well as edit access. They use read-only file/search tools; Implementer retains Bash for approved changes and validation.
+- Pane labels include repository context, task, role, backend, run, and lifecycle state. Cleanup is scoped to the current tab and closes only successful worker panes; blocked or ambiguous panes remain.
+- Worker reports use a per-turn completion token, so a retained Implementer follow-up cannot reuse an earlier turn's status marker.
+- OpenCode fallback uses the existing `explorer`, `implementer`, and `reviewer` agents in `.config/opencode/opencode.json`.
 
 Dry-run examples:
 
 ```sh
-HERDR_AGENT_DRY_RUN=1 .agents/skills/using-herdr-agents/scripts/herdr-agent scout "find the relevant files for ..."
-HERDR_AGENT_DRY_RUN=1 herdr-agent scout "find the relevant files for ..."
-HERDR_AGENT_DRY_RUN=1 HERDR_AGENT_SCOUT_BACKEND=cline herdr-agent scout "find the relevant files for ..."
-HERDR_AGENT_DRY_RUN=1 herdr-agent coder "implement the planned change ..."
-HERDR_AGENT_DRY_RUN=1 herdr-agent auditor "review the current diff ..."
-HERDR_AGENT_DRY_RUN=1 HERDR_AGENT_ADVISOR_THINKING=xhigh herdr-agent advisor "decide the next approach ..."
+HERDR_WORKER_DRY_RUN=1 herdr-worker run explorer --task-id example --brief "find relevant files"
+HERDR_WORKER_DRY_RUN=1 herdr-worker run implementer --task-id example --plan docs/superpowers/plans/example.md
+HERDR_WORKER_DRY_RUN=1 herdr-worker run reviewer --task-id example --plan docs/superpowers/plans/example.md
 ```
 
 Validation:
 
 ```sh
-sh -n .agents/skills/using-herdr-agents/scripts/herdr-agent \
-  .agents/skills/using-herdr-agents/scripts/herdr-agent-lib \
-  .agents/skills/using-herdr-agents/scripts/herdr-agent-session \
-  .agents/skills/using-herdr-agents/scripts/install \
-  .agents/skills/using-herdr-agents/tests/herdr-agent.sh \
-  tests/herdr-agent.sh
-sh tests/herdr-agent.sh
+sh -n .agents/skills/orchestrating-herdr-workers/scripts/herdr-worker \
+  .agents/skills/orchestrating-herdr-workers/scripts/herdr-worker-lib \
+  .agents/skills/orchestrating-herdr-workers/scripts/herdr-worker-run \
+  .agents/skills/orchestrating-herdr-workers/scripts/install \
+  .agents/skills/orchestrating-herdr-workers/tests/herdr-worker.sh \
+  tests/herdr-worker.sh
+sh tests/herdr-worker.sh
 ```
 
-Real launch examples with explicit context-keyed reuse:
-
-The reusable session name includes the role, repository/worktree key, backend/model, and `HERDR_AGENT_CONTEXT_KEY`.
-Reuse is only automatic when `HERDR_AGENT_CONTEXT_KEY` is set. Without it, `herdr-agent-session` downgrades default `HERDR_AGENT_REUSE=auto` to `never` and starts a fresh `no-context-*` session name.
-By default, `herdr-agent-session` starts each backend in interactive/TUI mode so the pane remains available for follow-up prompts.
-Set `HERDR_AGENT_SESSION_MODE=oneshot` only when you intentionally want the previous non-persistent behavior.
-
-```sh
-HERDR_AGENT_CONTEXT_KEY=herdr-multi-agent herdr-agent-session scout "find the relevant files for ..."
-HERDR_AGENT_CONTEXT_KEY=herdr-multi-agent HERDR_AGENT_SCOUT_BACKEND=cline herdr-agent-session scout "find the relevant files for ..."
-HERDR_AGENT_CONTEXT_KEY=herdr-multi-agent herdr-agent-session coder "implement the planned change ..."
-HERDR_AGENT_CONTEXT_KEY=herdr-multi-agent herdr-agent-session auditor "review the current diff ..."
-HERDR_AGENT_CONTEXT_KEY=herdr-multi-agent HERDR_AGENT_ADVISOR_THINKING=xhigh herdr-agent-session advisor "decide the next approach ..."
-HERDR_AGENT_REUSE=never herdr-agent-session auditor "review this with fresh context ..."
-HERDR_AGENT_SESSION_MODE=oneshot herdr-agent-session scout "run once and close when done ..."
-```
-
-The parent Codex session decides whether worker reports are accepted, rejected, or escalated.
+The Orchestrator decides whether Reviewer findings are accepted, rejected, or need more evidence. Accepted findings return to the retained Implementer with `herdr-worker follow-up`; `herdr-worker close --task-id <id>` closes the task after completion.

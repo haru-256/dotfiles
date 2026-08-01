@@ -22,6 +22,9 @@
   "diff_view_style": "split",
   "semantic_tokens": "combined",
   "agent_servers": {
+    "cursor": {
+      "type": "registry"
+    },
     "cline": {
       "type": "registry"
     },
@@ -72,9 +75,9 @@
     "file_icons": true,
   },
   "agent_buffer_font_size": 13.5,
-  "agent_ui_font_size": 15.5,
+  "agent_ui_font_size": 14.5,
   "agent": {
-    "terminal_init_command": "OPENCODE_ENABLE_EXA=1 opencode",
+    "terminal_init_command": "cursor-agent",
     "single_file_review": true,
     "dock": "left",
     "tool_permissions": {
@@ -170,8 +173,9 @@
   },
   "show_edit_predictions": true,
   "ensure_final_newline_on_save": true,
+  "format_on_save": "on",
   "soft_wrap": "editor_width",
-  "ui_font_size": 15.5,
+  "ui_font_size": 14.5,
   "buffer_font_size": 13.5,
   "theme": {
     "mode": "light",
@@ -189,5 +193,94 @@
         "font_style": "italic",
       },
     },
+  },
+  "lsp": {
+    "oxfmt": {
+      "initialization_options": {
+        "settings": {
+          "fmt.configPath": null
+        }
+      }
+    }
+  },
+  "languages": {
+    "JavaScript": {
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "oxfmt"
+          }
+        }
+      ]
+    },
+    "TypeScript": {
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "oxfmt"
+          }
+        }
+      ]
+    },
+    "TSX": {
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "oxfmt"
+          }
+        }
+      ]
+    },
+    "JSON": {
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "oxfmt"
+          }
+        }
+      ]
+    },
+    "JSONC": {
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "oxfmt"
+          }
+        }
+      ]
+    },
+    "CSS": {
+      "format_on_save": "on",
+      "prettier": {
+        "allowed": false
+      },
+      "formatter": [
+        {
+          "language_server": {
+            "name": "oxfmt"
+          }
+        }
+      ]
+    }
   },
 }

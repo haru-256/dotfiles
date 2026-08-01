@@ -1,0 +1,195 @@
+#!/bin/sh
+
+herdr_worker_die() {
+  printf '%s\n' "herdr-worker: $*" >&2
+  exit 64
+}
+
+herdr_worker_validate_role() {
+  case "$1" in
+    explorer|implementer|reviewer) ;;
+    *) herdr_worker_die "role must be explorer, implementer, or reviewer: $1" ;;
+  esac
+}
+
+herdr_worker_validate_task_id() {
+  case "$1" in
+    ""|*[!A-Za-z0-9._-]*) herdr_worker_die "invalid task id: $1" ;;
+  esac
+}
+
+herdr_worker_repo_root() {
+  if [ -n "${HERDR_WORKER_REPO_ROOT:-}" ]; then
+    CDPATH= cd -- "$HERDR_WORKER_REPO_ROOT" && pwd -P
+  elif root=$(git rev-parse --show-toplevel 2>/dev/null); then
+    printf '%s\n' "$root"
+  else
+    pwd -P
+  fi
+}
+
+herdr_worker_role_config() {
+  HERDR_WORKER_READ_ONLY=0
+  HERDR_WORKER_RETAIN_PANE=0
+  HERDR_WORKER_OPENCODE_AGENT="$1"
+
+  case "$1" in
+    explorer)
+      HERDR_WORKER_MODEL="${HERDR_WORKER_EXPLORER_MODEL:-composer-2.5}"
+      HERDR_WORKER_READ_ONLY=1
+      ;;
+    implementer)
+      HERDR_WORKER_MODEL="${HERDR_WORKER_IMPLEMENTER_MODEL:-cursor-grok-4.5-high}"
+      HERDR_WORKER_RETAIN_PANE=1
+      ;;
+    reviewer)
+      HERDR_WORKER_MODEL="${HERDR_WORKER_REVIEWER_MODEL:-composer-2.5}"
+      HERDR_WORKER_READ_ONLY=1
+      ;;
+  esac
+}
+
+herdr_worker_plan_path() {
+  repo_root="$1"
+  plan="$2"
+  case "$plan" in
+    /*) candidate="$plan" ;;
+    *) candidate="$repo_root/$plan" ;;
+  esac
+
+  if [ ! -r "$candidate" ]; then
+    herdr_worker_die "plan is not readable: $plan"
+  fi
+  if [ -L "$candidate" ]; then
+    herdr_worker_die "plan must not be a symlink: $plan"
+  fi
+
+  plan_dir=$(CDPATH= cd -- "$(dirname -- "$candidate")" && pwd -P)
+  candidate="$plan_dir/$(basename -- "$candidate")"
+  case "$candidate" in
+    "$repo_root"/*) printf '%s\n' "$candidate" ;;
+    *) herdr_worker_die "plan must be inside repository: $plan" ;;
+  esac
+}
+
+herdr_worker_context_id() {
+  printf '%s' "$1" | cksum | awk '{print $1}'
+}
+
+herdr_worker_run_id() {
+  suffix=
+  if [ -r /dev/urandom ]; then
+    suffix=$(od -An -tx1 -N4 /dev/urandom 2>/dev/null | tr -d ' \n')
+  fi
+  [ -n "$suffix" ] || suffix="$$"
+  printf '%s-%s-%s\n' "$(date +%s)" "$$" "$suffix"
+}
+
+# Slice the report of a single turn out of a raw pane snapshot.
+#
+# A pane snapshot also holds shell banners, the echoed prompt, TUI chrome, and —
+# for a retained implementer — every earlier turn. Only the span between this
+# turn's own markers is the report, so both markers must carry the turn token
+# and both must be anchored at the start of a line. The echoed instruction text
+# mentions the markers mid-sentence, which is why index(..) == 1 is required
+# rather than a substring search.
+#
+# Usage: herdr_worker_extract_report <raw-file> <turn-token> <report-file>
+# Writes the report body to <report-file> and prints three lines:
+#   1: 1 when the start marker for this turn was found, else 0
+#   2: 1 when the completion marker for this turn was found, else 0
+#   3: the reported status, empty when the completion marker was absent
+herdr_worker_extract_report() {
+  awk -v begin_prefix="REPORT[$2]: BEGIN" \
+    -v status_prefix="STATUS[$2]: " \
+    -v report_file="$3" '
+    {
+      lines[NR] = $0
+      line = $0
+      sub(/^[[:space:]]+/, "", line)
+      if (index(line, begin_prefix) == 1) begin_nr = NR
+      if (index(line, status_prefix) == 1) {
+        status_nr = NR
+        status = substr(line, length(status_prefix) + 1)
+        # Pin the start marker to the one preceding this completion marker so a
+        # later stray BEGIN cannot pair with an earlier turn.
+        begin_for_status = begin_nr
+      }
+    }
+    END {
+      if (status_nr > 0) {
+        found_status = 1
+        if (begin_for_status > 0) {
+          found_begin = 1
+          for (i = begin_for_status + 1; i < status_nr; i++) print lines[i] > report_file
+        }
+      }
+      print found_begin + 0
+      print found_status + 0
+      print status
+    }
+  ' "$1"
+}
+
+herdr_worker_current_pane() {
+  if [ -n "${HERDR_PANE_ID:-}" ]; then
+    printf '%s\n' "$HERDR_PANE_ID"
+    return
+  fi
+  herdr pane list | jq -r '.result.panes[] | select(.focused == true) | .pane_id' | head -n 1
+}
+
+herdr_worker_current_tab() {
+  pane_id="$1"
+  if [ -n "${HERDR_TAB_ID:-}" ]; then
+    printf '%s\n' "$HERDR_TAB_ID"
+    return
+  fi
+  herdr pane list | jq -r --arg pane "$pane_id" '.result.panes[] | select(.pane_id == $pane) | .tab_id' | head -n 1
+}
+
+herdr_worker_split_direction() {
+  pane_id="$1"
+  layout=$(herdr pane layout --pane "$pane_id")
+  width=$(printf '%s\n' "$layout" |
+    jq -r --arg pane "$pane_id" '.result.layout.panes[] | select(.pane_id == $pane) | .rect.width // empty')
+  height=$(printf '%s\n' "$layout" |
+    jq -r --arg pane "$pane_id" '.result.layout.panes[] | select(.pane_id == $pane) | .rect.height // empty')
+  case "$width:$height" in
+    *[!0-9:]*|:*|*:) printf '%s\n' down ;;
+    *)
+      if [ "$width" -ge 160 ] && [ "$width" -ge $((height * 2)) ]; then
+        printf '%s\n' right
+      else
+        printf '%s\n' down
+      fi
+      ;;
+  esac
+}
+
+herdr_worker_find_panes() {
+  tab_id="$1"
+  label_prefix="$2"
+  herdr pane list |
+    jq -r --arg tab "$tab_id" --arg prefix "$label_prefix" \
+      '.result.panes[] | select(.tab_id == $tab and ((.label // "") | startswith($prefix))) | .pane_id'
+}
+
+herdr_worker_find_panes_in_state() {
+  tab_id="$1"
+  label_prefix="$2"
+  state="$3"
+  herdr pane list |
+    jq -r --arg tab "$tab_id" --arg prefix "$label_prefix" --arg suffix ":$state" \
+      '.result.panes[] | select(.tab_id == $tab and ((.label // "") | startswith($prefix)) and ((.label // "") | endswith($suffix))) | .pane_id'
+}
+
+herdr_worker_pane_label() {
+  pane_id="$1"
+  herdr pane list | jq -r --arg pane "$pane_id" '.result.panes[] | select(.pane_id == $pane) | .label // empty' | head -n 1
+}
+
+herdr_worker_shell_quote() {
+  escaped=$(printf '%s' "$1" | sed "s/'/'\\\\''/g")
+  printf "'%s'" "$escaped"
+}

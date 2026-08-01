@@ -1,0 +1,56 @@
+#!/bin/sh
+set -eu
+
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+skill_dir=$(CDPATH= cd -- "$script_dir/.." && pwd -P)
+repo_root=$(CDPATH= cd -- "$skill_dir/../../.." && pwd -P)
+
+bin_dir="${HERDR_WORKER_INSTALL_BIN_DIR:-$HOME/.local/bin}"
+codex_skills_dir="${HERDR_WORKER_INSTALL_CODEX_SKILLS_DIR:-$HOME/.codex/skills}"
+claude_skills_dir="${HERDR_WORKER_INSTALL_CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
+codex_agents_dir="${HERDR_WORKER_INSTALL_CODEX_AGENTS_DIR:-$HOME/.codex/agents}"
+claude_agents_dir="${HERDR_WORKER_INSTALL_CLAUDE_AGENTS_DIR:-$HOME/.claude/agents}"
+dry_run="${HERDR_WORKER_INSTALL_DRY_RUN:-0}"
+
+link_pair() {
+  source_path="$1"
+  target_path="$2"
+  if [ "$dry_run" = "1" ]; then
+    printf '%s -> %s\n' "$target_path" "$source_path"
+    return
+  fi
+
+  _install_source_dir=$(CDPATH= cd -- "$(dirname -- "$source_path")" && pwd -P)
+  _install_target_parent=$(dirname -- "$target_path")
+  if [ -d "$_install_target_parent" ]; then
+    _install_target_dir=$(CDPATH= cd -- "$_install_target_parent" && pwd -P)
+    if [ "$_install_source_dir/$(basename -- "$source_path")" = \
+      "$_install_target_dir/$(basename -- "$target_path")" ]; then
+      unset _install_source_dir _install_target_parent _install_target_dir
+      return
+    fi
+    unset _install_target_dir
+  fi
+  unset _install_source_dir _install_target_parent
+
+  mkdir -p "$(dirname -- "$target_path")"
+  if [ -e "$target_path" ] && [ ! -L "$target_path" ]; then
+    if [ -d "$target_path" ] && rmdir "$target_path" 2>/dev/null; then
+      :
+    else
+      printf '%s\n' "install: target exists and is not an empty directory or symlink: $target_path" >&2
+      exit 73
+    fi
+  fi
+  ln -sfn "$source_path" "$target_path"
+}
+
+link_pair "$script_dir/herdr-worker" "$bin_dir/herdr-worker"
+link_pair "$skill_dir" "$codex_skills_dir/orchestrating-herdr-workers"
+link_pair "$skill_dir" "$claude_skills_dir/orchestrating-herdr-workers"
+link_pair "$repo_root/.codex/agents/orchestrator.toml" "$codex_agents_dir/orchestrator.toml"
+link_pair "$repo_root/.claude/agents/orchestrator.md" "$claude_agents_dir/orchestrator.md"
+
+if [ "$dry_run" != "1" ]; then
+  printf '%s\n' "Installed orchestrating-herdr-workers for Codex and Claude."
+fi

@@ -1,0 +1,103 @@
+#!/bin/sh
+set -eu
+
+if [ "$#" -ne 4 ]; then
+  printf '%s\n' "usage: herdr-worker-run <cursor|opencode> <role> <repo-root> <prompt-file>" >&2
+  exit 64
+fi
+
+backend="$1"
+role="$2"
+repo_root="$3"
+prompt_file="$4"
+
+if [ ! -r "$prompt_file" ]; then
+  printf '%s\n' "herdr-worker-run: prompt is not readable: $prompt_file" >&2
+  exit 66
+fi
+
+case "$role" in
+  explorer)
+    model="${HERDR_WORKER_EXPLORER_MODEL:-composer-2.5}"
+    read_only=1
+    ;;
+  implementer)
+    model="${HERDR_WORKER_IMPLEMENTER_MODEL:-cursor-grok-4.5-high}"
+    read_only=0
+    ;;
+  reviewer)
+    model="${HERDR_WORKER_REVIEWER_MODEL:-composer-2.5}"
+    read_only=1
+    ;;
+  *)
+    printf '%s\n' "herdr-worker-run: invalid role: $role" >&2
+    exit 64
+    ;;
+esac
+
+prompt=$(cat "$prompt_file")
+
+run_opencode() {
+  printf '%s\n' "HERDR_WORKER_BACKEND=opencode"
+  if command -v mise >/dev/null 2>&1; then
+    exec mise exec -- opencode "$repo_root" --agent "$role" --mini --prompt "$prompt"
+  fi
+  exec opencode "$repo_root" --agent "$role" --mini --prompt "$prompt"
+}
+
+if [ "$backend" = "opencode" ]; then
+  run_opencode
+fi
+if [ "$backend" != "cursor" ]; then
+  printf '%s\n' "herdr-worker-run: backend must be cursor or opencode: $backend" >&2
+  exit 64
+fi
+
+cursor_bin="${HERDR_WORKER_CURSOR_BIN:-cursor-agent}"
+if ! command -v "$cursor_bin" >/dev/null 2>&1; then
+  printf '%s\n' "HERDR_WORKER_CURSOR_PREFLIGHT=failed"
+  run_opencode
+fi
+
+set +e
+"$cursor_bin" status >/dev/null 2>&1
+cursor_preflight_status=$?
+set -e
+if [ "$cursor_preflight_status" -ge 128 ]; then
+  exit "$cursor_preflight_status"
+fi
+if [ "$cursor_preflight_status" -ne 0 ]; then
+  printf '%s\n' "HERDR_WORKER_CURSOR_PREFLIGHT=failed"
+  run_opencode
+fi
+
+set +e
+cursor_models=$("$cursor_bin" models 2>/dev/null)
+cursor_models_status=$?
+set -e
+if [ "$cursor_models_status" -ge 128 ]; then
+  exit "$cursor_models_status"
+fi
+if [ "$cursor_models_status" -ne 0 ] ||
+  ! printf '%s\n' "$cursor_models" | awk '{print $1}' | grep -Fx "$model" >/dev/null; then
+  printf '%s\n' "HERDR_WORKER_CURSOR_PREFLIGHT=model-unavailable"
+  run_opencode
+fi
+
+printf '%s\n' "HERDR_WORKER_BACKEND=cursor"
+
+set +e
+if [ "$read_only" = "1" ]; then
+  "$cursor_bin" --workspace "$repo_root" --model "$model" --mode ask "$prompt"
+else
+  "$cursor_bin" --workspace "$repo_root" --model "$model" "$prompt"
+fi
+cursor_status=$?
+set -e
+
+if [ "$cursor_status" -eq 0 ]; then
+  exit 0
+fi
+
+printf '%s\n' "HERDR_WORKER_CURSOR_FALLBACK=refused-after-launch" >&2
+exit "$cursor_status"

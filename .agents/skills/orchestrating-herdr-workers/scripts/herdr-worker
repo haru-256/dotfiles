@@ -1,0 +1,414 @@
+#!/bin/sh
+set -eu
+
+physical_dirname() {
+  CDPATH= cd -- "$(dirname -- "$1")" && pwd -P
+}
+
+resolve_path() {
+  target="$1"
+  while [ -L "$target" ]; do
+    link_target=$(readlink "$target")
+    case "$link_target" in
+      /*) target="$link_target" ;;
+      *) target=$(physical_dirname "$target")/"$link_target" ;;
+    esac
+  done
+  printf '%s/%s\n' "$(physical_dirname "$target")" "$(basename -- "$target")"
+}
+
+script_path=$(resolve_path "$0")
+script_dir=$(physical_dirname "$script_path")
+skill_dir=$(CDPATH= cd -- "$script_dir/.." && pwd -P)
+. "$script_dir/herdr-worker-lib"
+
+usage() {
+  cat >&2 <<'EOF'
+usage:
+  herdr-worker run <explorer|implementer|reviewer> --task-id <id> [options]
+  herdr-worker follow-up implementer --task-id <id> --brief <text>
+  herdr-worker status --task-id <id>
+  herdr-worker close --task-id <id> [--role <role>]
+
+run options:
+  --plan <path>       required for implementer and reviewer
+  --brief <text>      task-specific context
+  --brief-file <path> read task-specific context from a file
+  --depth quick|deep  explorer only; default quick
+  --dry-run           print routing without splitting a Herdr pane
+EOF
+  exit 64
+}
+
+if [ "$#" -lt 1 ]; then
+  usage
+fi
+
+command_name="$1"
+shift
+repo_root=$(herdr_worker_repo_root)
+context_id=$(herdr_worker_context_id "$repo_root")
+prompt_dir="${HERDR_WORKER_PROMPT_DIR:-$skill_dir/prompts}"
+timeout_ms="${HERDR_WORKER_TIMEOUT_MS:-1800000}"
+# `herdr agent read --lines` is an upper bound that saturates at the rows the
+# pane actually holds, so over-asking costs nothing while under-asking silently
+# drops the head of a long report.
+read_lines="${HERDR_WORKER_READ_LINES:-100000}"
+
+require_herdr() {
+  if [ "${HERDR_ENV:-}" != "1" ]; then
+    herdr_worker_die "HERDR_ENV=1 is required"
+  fi
+}
+
+case "$command_name" in
+  run)
+    require_herdr
+    [ "$#" -ge 1 ] || usage
+    role="$1"
+    shift
+    herdr_worker_validate_role "$role"
+    task_id=
+    plan=
+    brief=
+    brief_file=
+    depth=quick
+    depth_set=0
+    dry_run="${HERDR_WORKER_DRY_RUN:-0}"
+
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        --task-id) [ "$#" -ge 2 ] || usage; task_id="$2"; shift 2 ;;
+        --plan) [ "$#" -ge 2 ] || usage; plan="$2"; shift 2 ;;
+        --brief) [ "$#" -ge 2 ] || usage; brief="$2"; shift 2 ;;
+        --brief-file) [ "$#" -ge 2 ] || usage; brief_file="$2"; shift 2 ;;
+        --depth) [ "$#" -ge 2 ] || usage; depth="$2"; depth_set=1; shift 2 ;;
+        --dry-run) dry_run=1; shift ;;
+        *) usage ;;
+      esac
+    done
+
+    herdr_worker_validate_task_id "$task_id"
+    case "$depth" in quick|deep) ;; *) herdr_worker_die "depth must be quick or deep: $depth" ;; esac
+    if [ "$role" != "explorer" ] && [ "$depth_set" = "1" ]; then
+      herdr_worker_die "--depth is only valid for explorer"
+    fi
+    if [ -n "$brief" ] && [ -n "$brief_file" ]; then
+      herdr_worker_die "use only one of --brief or --brief-file"
+    fi
+    if [ -n "$brief_file" ]; then
+      [ -r "$brief_file" ] || herdr_worker_die "brief file is not readable: $brief_file"
+      brief=$(cat "$brief_file")
+    fi
+    if [ "$role" = "explorer" ] && [ -z "$brief" ]; then
+      herdr_worker_die "--brief or --brief-file is required for explorer"
+    fi
+    if [ "$role" != "explorer" ] && [ -z "$plan" ]; then
+      herdr_worker_die "--plan is required for $role"
+    fi
+    if [ -n "$plan" ]; then
+      plan=$(herdr_worker_plan_path "$repo_root" "$plan")
+    fi
+
+    herdr_worker_role_config "$role"
+    backend="${HERDR_WORKER_BACKEND:-cursor}"
+    case "$backend" in cursor|opencode) ;; *) herdr_worker_die "backend must be cursor or opencode: $backend" ;; esac
+
+    if [ "$dry_run" = "1" ]; then
+      printf 'COMMAND=run\nROLE=%s\nBACKEND=%s\nMODEL=%s\nREAD_ONLY=%s\n' \
+        "$role" "$backend" "$HERDR_WORKER_MODEL" "$HERDR_WORKER_READ_ONLY"
+      printf 'OPENCODE_AGENT=%s\nTASK_ID=%s\nDEPTH=%s\n' "$HERDR_WORKER_OPENCODE_AGENT" "$task_id" "$depth"
+      printf 'PLAN=%s\nREPO_ROOT=%s\nPROMPT_DIR=%s\nRETAIN_PANE=%s\n' \
+        "$plan" "$repo_root" "$prompt_dir" "$HERDR_WORKER_RETAIN_PANE"
+      exit 0
+    fi
+
+    command -v herdr >/dev/null 2>&1 || herdr_worker_die "herdr command is required"
+    command -v jq >/dev/null 2>&1 || herdr_worker_die "jq command is required"
+    for prompt in "$prompt_dir/shared.md" "$prompt_dir/$role.md"; do
+      [ -r "$prompt" ] || herdr_worker_die "prompt is not readable: $prompt"
+    done
+
+    caller_pane_id=$(herdr_worker_current_pane)
+    [ -n "$caller_pane_id" ] || herdr_worker_die "current Herdr pane not found"
+    tab_id=$(herdr_worker_current_tab "$caller_pane_id")
+    [ -n "$tab_id" ] || herdr_worker_die "current Herdr tab not found"
+    task_prefix="herdr-worker:${context_id}:${task_id}:"
+    if [ "$role" = "implementer" ] &&
+      [ -n "$(herdr_worker_find_panes "$tab_id" "${task_prefix}implementer:")" ]; then
+      herdr_worker_die "an implementer pane already exists for task: $task_id"
+    fi
+
+    run_id=$(herdr_worker_run_id)
+    turn_token="${HERDR_WORKER_TURN_TOKEN:-$run_id}"
+    job_dir=$(mktemp -d "${TMPDIR:-/tmp}/herdr-worker-${task_id}-${role}.XXXXXX")
+    prompt_file="$job_dir/prompt.md"
+    launcher="$job_dir/launch.sh"
+    {
+      cat "$prompt_dir/shared.md"
+      printf '\n\n'
+      cat "$prompt_dir/$role.md"
+      printf '\n\n# Repository\n%s\n' "$repo_root"
+      [ -z "$plan" ] || printf '\n# Approved Plan\n%s\n' "$plan"
+      [ "$role" != "explorer" ] || printf '\n# Exploration Depth\n%s\n' "$depth"
+      [ -z "$brief" ] || printf '\n# Brief\n%s\n' "$brief"
+      printf '\n# Required Report Markers\n'
+      printf 'Begin the final response with `REPORT[%s]: BEGIN` alone on its own line, before any other content.\n' \
+        "$turn_token"
+      printf 'End the final response with `STATUS[%s]: <result>`, where result is DONE, NEEDS_CONTEXT, or BLOCKED.\n' \
+        "$turn_token"
+      printf 'Only the lines between those two markers are read as the report. Both are required.\n'
+    } >"$prompt_file"
+    {
+      printf '#!/bin/sh\nexec '
+      herdr_worker_shell_quote "$script_dir/herdr-worker-run"
+      printf ' '
+      herdr_worker_shell_quote "$backend"
+      printf ' '
+      herdr_worker_shell_quote "$role"
+      printf ' '
+      herdr_worker_shell_quote "$repo_root"
+      printf ' '
+      herdr_worker_shell_quote "$prompt_file"
+      printf '\n'
+    } >"$launcher"
+    chmod +x "$launcher"
+
+    label_base="${task_prefix}${role}:${backend}:${run_id}"
+    label="${label_base}:active"
+    split_direction=$(herdr_worker_split_direction "$caller_pane_id")
+    pane_json=$(herdr pane split --pane "$caller_pane_id" --direction "$split_direction" --cwd "$repo_root" --no-focus)
+    pane_id=$(printf '%s\n' "$pane_json" | jq -r '.result.pane.pane_id')
+    if [ -z "$pane_id" ] || [ "$pane_id" = "null" ]; then
+      herdr_worker_die "Herdr did not return a pane id"
+    fi
+    herdr pane rename "$pane_id" "$label" >/dev/null
+
+    herdr pane run "$pane_id" "sh $(herdr_worker_shell_quote "$launcher")"
+    startup_attempt=0
+    startup_attempts="${HERDR_WORKER_STARTUP_ATTEMPTS:-150}"
+    agent_detected=0
+    agent_status=
+    while [ "$startup_attempt" -lt "$startup_attempts" ]; do
+      agent_json=$(herdr agent get "$pane_id" 2>/dev/null || printf '{}')
+      candidate_status=$(printf '%s\n' "$agent_json" | jq -r '.. | .agent_status? // empty' | head -n 1)
+      case "$candidate_status" in
+        working|done|blocked)
+          agent_status="$candidate_status"
+          agent_detected=1
+          break
+          ;;
+      esac
+      startup_attempt=$((startup_attempt + 1))
+      sleep 0.2
+    done
+    if [ "$agent_detected" = "0" ]; then
+      herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+      printf '%s\n' "STATUS: BLOCKED" "PANE_ID: $pane_id" \
+        "FAILURE_SIGNATURE: herdr/agent/startup-not-detected"
+      herdr pane read "$pane_id" --source recent-unwrapped --lines "$read_lines" || true
+      exit 69
+    fi
+
+    if [ "$agent_status" = "working" ]; then
+      if ! herdr agent wait "$pane_id" --until idle --until done --until blocked --timeout "$timeout_ms" >/dev/null; then
+        herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+        printf '%s\n' "STATUS: BLOCKED" "PANE_ID: $pane_id" \
+          "FAILURE_SIGNATURE: herdr/wait/timeout"
+        exit 69
+      fi
+    fi
+
+    agent_json=$(herdr agent get "$pane_id" 2>/dev/null || printf '{}')
+    agent_status=$(printf '%s\n' "$agent_json" | jq -r '.. | .agent_status? // empty' | head -n 1)
+    printf 'TASK_ID: %s\nROLE: %s\nPANE_ID: %s\nAGENT_STATUS: %s\n\n' \
+      "$task_id" "$role" "$pane_id" "${agent_status:-unknown}"
+    raw_file="$job_dir/raw.txt"
+    report_file="$job_dir/report.txt"
+    : >"$report_file"
+    herdr agent read "$pane_id" --source recent-unwrapped --lines "$read_lines" >"$raw_file"
+    extract=$(herdr_worker_extract_report "$raw_file" "$turn_token" "$report_file")
+    found_begin=$(printf '%s\n' "$extract" | sed -n 1p)
+    found_status=$(printf '%s\n' "$extract" | sed -n 2p)
+    reported_status=$(printf '%s\n' "$extract" | sed -n 3p)
+    # Fall back to the raw snapshot only for diagnosis. It is never handed over
+    # as the report, because it carries the echoed prompt and TUI chrome.
+    if [ "$found_begin" = "1" ] && [ "$found_status" = "1" ]; then
+      report_ok=1
+      cat "$report_file"
+    else
+      report_ok=0
+      cat "$raw_file"
+    fi
+
+    case "$agent_status" in
+      done|idle)
+        if [ "$report_ok" != "1" ]; then
+          herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+          if [ "$found_status" != "1" ]; then
+            printf '%s\n' "STATUS: BLOCKED" "FAILURE_SIGNATURE: worker/report/ambiguous-status"
+          else
+            printf '%s\n' "STATUS: BLOCKED" "FAILURE_SIGNATURE: worker/report/truncated-or-malformed"
+          fi
+          exit 69
+        fi
+        case "$reported_status" in
+          DONE) ;;
+          BLOCKED|NEEDS_CONTEXT)
+            herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+            exit 69
+            ;;
+          *)
+            herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+            printf '%s\n' "STATUS: BLOCKED" "FAILURE_SIGNATURE: worker/report/ambiguous-status"
+            exit 69
+            ;;
+        esac
+        herdr pane rename "$pane_id" "${label_base}:success" >/dev/null
+        if [ "$HERDR_WORKER_RETAIN_PANE" = "0" ]; then
+          herdr pane close "$pane_id"
+        fi
+        rm -rf "$job_dir"
+        ;;
+      blocked)
+        herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+        exit 69
+        ;;
+      *)
+        herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+        printf '%s\n' "STATUS: BLOCKED" "FAILURE_SIGNATURE: herdr/agent/ambiguous-status"
+        exit 69
+        ;;
+    esac
+    ;;
+  follow-up)
+    require_herdr
+    [ "$#" -ge 1 ] || usage
+    role="$1"
+    shift
+    [ "$role" = "implementer" ] || herdr_worker_die "follow-up is only valid for implementer"
+    task_id=
+    brief=
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        --task-id) [ "$#" -ge 2 ] || usage; task_id="$2"; shift 2 ;;
+        --brief) [ "$#" -ge 2 ] || usage; brief="$2"; shift 2 ;;
+        *) usage ;;
+      esac
+    done
+    herdr_worker_validate_task_id "$task_id"
+    [ -n "$brief" ] || herdr_worker_die "--brief is required for follow-up"
+    caller_pane_id=$(herdr_worker_current_pane)
+    [ -n "$caller_pane_id" ] || herdr_worker_die "current Herdr pane not found"
+    tab_id=$(herdr_worker_current_tab "$caller_pane_id")
+    [ -n "$tab_id" ] || herdr_worker_die "current Herdr tab not found"
+    task_prefix="herdr-worker:${context_id}:${task_id}:"
+    panes=$(herdr_worker_find_panes_in_state "$tab_id" "${task_prefix}implementer:" success)
+    pane_count=$(printf '%s\n' "$panes" | awk 'NF { count++ } END { print count + 0 }')
+    [ "$pane_count" -eq 1 ] || herdr_worker_die "expected one successful implementer pane for task: $task_id"
+    pane_id="$panes"
+    label=$(herdr_worker_pane_label "$pane_id")
+    label_base=${label%:success}
+    herdr pane rename "$pane_id" "${label_base}:active" >/dev/null
+    turn_token="${HERDR_WORKER_TURN_TOKEN:-$(herdr_worker_run_id)}"
+    follow_up_prompt=$(printf '%s\n\nBegin the final response with `REPORT[%s]: BEGIN` alone on its own line, before any other content.\nEnd the final response with `STATUS[%s]: <result>`, where result is DONE, NEEDS_CONTEXT, or BLOCKED.\nOnly the lines between those two markers are read as the report. Both are required.\n' \
+      "$brief" "$turn_token" "$turn_token")
+    if ! herdr agent prompt "$pane_id" "$follow_up_prompt" --wait --until idle --until done --until blocked --timeout "$timeout_ms" >/dev/null; then
+      herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+      printf '%s\n' "STATUS: BLOCKED" "FAILURE_SIGNATURE: herdr/agent/follow-up-failed"
+      exit 69
+    fi
+    agent_json=$(herdr agent get "$pane_id" 2>/dev/null || printf '{}')
+    agent_status=$(printf '%s\n' "$agent_json" | jq -r '.. | .agent_status? // empty' | head -n 1)
+    printf 'TASK_ID: %s\nROLE: implementer\nPANE_ID: %s\nAGENT_STATUS: %s\n\n' \
+      "$task_id" "$pane_id" "${agent_status:-unknown}"
+    turn_dir=$(mktemp -d "${TMPDIR:-/tmp}/herdr-worker-follow-up.XXXXXX")
+    raw_file="$turn_dir/raw.txt"
+    report_file="$turn_dir/report.txt"
+    : >"$report_file"
+    herdr agent read "$pane_id" --source recent-unwrapped --lines "$read_lines" >"$raw_file"
+    # The implementer pane is retained across turns, so the snapshot also holds
+    # every earlier turn. Only this turn's token may bound the slice.
+    extract=$(herdr_worker_extract_report "$raw_file" "$turn_token" "$report_file")
+    found_begin=$(printf '%s\n' "$extract" | sed -n 1p)
+    found_status=$(printf '%s\n' "$extract" | sed -n 2p)
+    reported_status=$(printf '%s\n' "$extract" | sed -n 3p)
+    if [ "$found_begin" = "1" ] && [ "$found_status" = "1" ]; then
+      report_ok=1
+      cat "$report_file"
+    else
+      report_ok=0
+      cat "$raw_file"
+    fi
+    rm -rf "$turn_dir"
+    case "$agent_status" in
+      done|idle)
+        if [ "$report_ok" != "1" ]; then
+          herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+          if [ "$found_status" != "1" ]; then
+            printf '%s\n' "STATUS: BLOCKED" "FAILURE_SIGNATURE: worker/report/ambiguous-status"
+          else
+            printf '%s\n' "STATUS: BLOCKED" "FAILURE_SIGNATURE: worker/report/truncated-or-malformed"
+          fi
+          exit 69
+        fi
+        if [ "$reported_status" = "DONE" ]; then
+          herdr pane rename "$pane_id" "${label_base}:success" >/dev/null
+        else
+          herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+          printf '%s\n' "STATUS: BLOCKED" "FAILURE_SIGNATURE: worker/report/${reported_status:-ambiguous-status}"
+          exit 69
+        fi
+        ;;
+      blocked)
+        herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+        exit 69
+        ;;
+      *)
+        herdr pane rename "$pane_id" "${label_base}:blocked" >/dev/null || true
+        printf '%s\n' "STATUS: BLOCKED" "FAILURE_SIGNATURE: herdr/agent/ambiguous-status"
+        exit 69
+        ;;
+    esac
+    ;;
+  status)
+    require_herdr
+    task_id=
+    while [ "$#" -gt 0 ]; do
+      case "$1" in --task-id) [ "$#" -ge 2 ] || usage; task_id="$2"; shift 2 ;; *) usage ;; esac
+    done
+    herdr_worker_validate_task_id "$task_id"
+    caller_pane_id=$(herdr_worker_current_pane)
+    [ -n "$caller_pane_id" ] || herdr_worker_die "current Herdr pane not found"
+    tab_id=$(herdr_worker_current_tab "$caller_pane_id")
+    [ -n "$tab_id" ] || herdr_worker_die "current Herdr tab not found"
+    task_prefix="herdr-worker:${context_id}:${task_id}:"
+    herdr pane list |
+      jq --arg task_id "$task_id" --arg tab_id "$tab_id" --arg prefix "$task_prefix" \
+        '{task_id: $task_id, tab_id: $tab_id, panes: [.result.panes[] | select(.tab_id == $tab_id and ((.label // "") | startswith($prefix)))]}'
+    ;;
+  close)
+    require_herdr
+    task_id=
+    role=
+    while [ "$#" -gt 0 ]; do
+      case "$1" in
+        --task-id) [ "$#" -ge 2 ] || usage; task_id="$2"; shift 2 ;;
+        --role) [ "$#" -ge 2 ] || usage; role="$2"; shift 2 ;;
+        *) usage ;;
+      esac
+    done
+    herdr_worker_validate_task_id "$task_id"
+    if [ -n "$role" ]; then herdr_worker_validate_role "$role"; fi
+    caller_pane_id=$(herdr_worker_current_pane)
+    [ -n "$caller_pane_id" ] || herdr_worker_die "current Herdr pane not found"
+    tab_id=$(herdr_worker_current_tab "$caller_pane_id")
+    [ -n "$tab_id" ] || herdr_worker_die "current Herdr tab not found"
+    prefix="herdr-worker:${context_id}:${task_id}:"
+    [ -z "$role" ] || prefix="${prefix}${role}:"
+    panes=$(herdr_worker_find_panes_in_state "$tab_id" "$prefix" success)
+    [ -n "$panes" ] || exit 0
+    printf '%s\n' "$panes" | while IFS= read -r pane_id; do herdr pane close "$pane_id"; done
+    ;;
+  *) usage ;;
+esac
