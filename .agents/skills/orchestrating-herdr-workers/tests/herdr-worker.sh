@@ -60,6 +60,13 @@ do
   fi
 done
 
+skill_md=$(cat "$SKILL_DIR/SKILL.md")
+assert_contains "$skill_md" "only when a worker task ID was actually created"
+assert_contains "$skill_md" "may not silently waive approval, independent review, claim verification, or cleanup"
+assert_contains "$skill_md" "After each fix, run validation and a fresh Reviewer"
+assert_contains "$skill_md" "retained same-task Implementer"
+assert_contains "$skill_md" "repeat until no accepted findings remain"
+
 for script in "$SCRIPT" "$RUNNER" "$INSTALL_SCRIPT" "$0"
 do
   sh -n "$script"

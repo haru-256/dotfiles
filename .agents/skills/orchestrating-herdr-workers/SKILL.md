@@ -25,16 +25,20 @@ Use direct reads when the relevant files are already known. Do not launch Explor
 
 ## Orchestration Contract
 
-Decide the path before you start. When the user's deliverable is an answer, only steps 2 and 6 apply: gather the facts, check them, report, and finish — do not manufacture a plan just to have something to approve. When the deliverable is a diff, walk all six in order, scaling the machinery to the change: a one-line documentation edit does not need the same loop as a refactor, and if you think the loop is disproportionate, offer the user the choice rather than deciding silently.
+Decide the path before you start.
+- Answer: steps 2 and 6 only — gather the facts, check them, report, and finish. Do not manufacture a plan just to have something to approve.
+- Diff: walk all six in order.
+
+Proportional scaling may omit Explorer, shorten briefs, and focus validation/review, but may not silently waive approval, independent review, claim verification, or cleanup. If even the reduced worker loop is disproportionate, ask the user whether to proceed directly without Herdr delegation; do not silently switch execution modes.
 
 1. Inspect the worktree and preserve unrelated changes.
 2. Reach for Explorer only when the facts you need are spread across files you cannot yet name. When the relevant paths are already known, read them directly — never launch Explorer just to summarize a small known file.
 3. Write the plan and wait for explicit user approval before launching Implementer.
 4. Launch Reviewer when Implementer produces a diff.
-5. Adjudicate every finding; send only accepted findings to the retained Implementer.
-6. Leave pane cleanup on the normal path to `herdr-worker run`, which closes a successful Explorer or Reviewer pane itself. Close a retained Implementer explicitly with `herdr-worker close` once its review/fix loop is finished. Blocked, crashed, or ambiguous panes stay open for diagnosis.
+5. Adjudicate every finding; send only accepted findings to the retained same-task Implementer. After each fix, run validation and a fresh Reviewer; repeat until no accepted findings remain.
+6. Leave pane cleanup on the normal path to `herdr-worker run`, which closes a successful Explorer or Reviewer pane itself. Close a retained Implementer explicitly with `herdr-worker close` once its review/fix loop is finished. Blocked, crashed, or ambiguous panes stay open for diagnosis. Run `herdr-worker status --task-id <id>` only when a worker task ID was actually created; it should list no panes except ones deliberately kept open for diagnosis.
 
-The human owns task tabs. Never create, rename, or close a tab. `herdr-worker` splits each worker into a sibling pane in the current tab without changing focus, and chooses the direction itself: right from a sufficiently wide caller pane, down from a narrow or tall one. You neither pass nor check the direction — a successful pane is closed before its geometry can be read. What you do check once a task is finished is that nothing leaked: `herdr-worker status --task-id <id>` should list no panes except ones deliberately kept open for diagnosis.
+The human owns task tabs. Never create, rename, or close a tab. `herdr-worker` splits each worker into a sibling pane in the current tab without changing focus, and chooses the direction itself: right from a sufficiently wide caller pane, down from a narrow or tall one. You neither pass nor check the direction — a successful pane is closed before its geometry can be read.
 
 The normal interface is `herdr-worker --help`. Pass repository paths and plan paths rather than conversation transcripts. Everything printed after the header by `run` and `follow-up` is the worker's report in full; read all of it. Never pipe that output through `head`, `tail`, or any other truncation — the job directory is discarded on success, so whatever a truncated read drops is unrecoverable.
 
